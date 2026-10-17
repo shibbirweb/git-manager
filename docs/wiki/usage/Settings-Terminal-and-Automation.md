@@ -22,7 +22,7 @@ A saved shell that is gone says **(not found, the login shell is used)**. The ar
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Font family | A comma-separated list, like VS Code's `terminal.integrated.fontFamily`. Leave it empty to use the editor font. **Use the Editor Font** clears it. Click a font name below the box to use it. | Empty (the editor font) |
+| Font family | A comma-separated list of fonts. Leave it empty to use the editor font. **Use the Editor Font** clears it. Click a font name below the box to use it. | Empty (the editor font) |
 | Font size | 9 to 24 px in half steps. | 13 px (a size you saved earlier stays) |
 | Line height | A multiple of the font's own line height, 1.0 to 2.0. | 1.2 |
 | Letter spacing | Extra pixels between characters, 0 to 5. | 0 px |

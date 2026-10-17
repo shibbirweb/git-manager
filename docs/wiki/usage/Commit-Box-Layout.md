@@ -2,8 +2,8 @@
 
 The commit box is where you write a commit message and click **Commit**. Nibtree can place it in two ways, and you can switch at any time:
 
-- **Single** (the default), like JetBrains IDEs: one commit box at the bottom of **Changes**. With several repositories, **Commit to** picks the repository the commit goes to.
-- **Per repository**, like VS Code: every repository in **Changes** has its own commit box at the top of its section, right under its name.
+- **Single** (the default): one commit box at the bottom of **Changes**. With several repositories, **Commit to** picks the repository the commit goes to.
+- **Per repository**: every repository in **Changes** has its own commit box at the top of its section, right under its name.
 
 ![A commit box per repository](../images/commit-box-per-repo.png)
 
@@ -31,7 +31,7 @@ A repository you collapse hides its box too. Repositories with no changes are li
 ## Which one to pick
 
 - **Single** keeps the list long and the box in one place. It suits one repository, or several where you commit one at a time.
-- **Per repository** shows every message at once. It suits a workspace where you often commit to several repositories in a row, as in VS Code.
+- **Per repository** shows every message at once. It suits a workspace where you often commit to several repositories in a row.
 
 On Windows, use Ctrl instead of Cmd.
 

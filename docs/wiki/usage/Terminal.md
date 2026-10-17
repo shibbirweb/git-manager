@@ -47,7 +47,7 @@ With two or more terminals, a list appears on the right of the panel. Each row s
 
 *Three terminals: the list shows each name and folder, and marks the active one.*
 
-Names follow the shell, like VS Code: the first zsh is "zsh", the next one "zsh (2)", and so on. When a terminal closes, its number is free again. Double-click a name to rename the terminal.
+Names follow the shell: the first zsh is "zsh", the next one "zsh (2)", and so on. When a terminal closes, its number is free again. Double-click a name to rename the terminal.
 
 Drag the line between the terminal and the list to change the list's width, or double-click it to reset. The terminal always keeps enough room, and the width is remembered.
 
@@ -61,7 +61,7 @@ Choose **Move Terminal into Editor Area** to move a terminal into its own editor
 
 The tab shows a terminal icon and the terminal's name. Right-click the tab for the usual Close items, **Move Terminal into Panel** and **Rename...**. Move Terminal into Panel puts it back at the end of the panel's list, still running.
 
-Closing a terminal tab (with x, Close Others, Close All and so on) kills that terminal, like in VS Code.
+Closing a terminal tab (with x, Close Others, Close All and so on) kills that terminal.
 
 ## When a shell ends
 

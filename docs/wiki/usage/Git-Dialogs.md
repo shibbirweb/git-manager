@@ -1,6 +1,6 @@
 # Git Dialogs
 
-Several items of the [Git Menu](Git-Menu.md) open a dialog, like their counterparts in JetBrains IDEs. They all work the same way:
+Several items of the [Git Menu](Git-Menu.md) open a dialog. They all work the same way:
 
 - **Esc** cancels and **Cmd+Enter** runs the main button.
 - Most of them show, at the bottom, the git command they will run. You can select and copy it, and it is a good way to learn git.

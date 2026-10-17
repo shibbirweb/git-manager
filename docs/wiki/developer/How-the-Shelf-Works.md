@@ -1,10 +1,10 @@
 # How the Shelf Works
 
-The shelf is JetBrains' Shelve Changes: chosen files are saved as a named patch and taken out of the work tree, then applied again later, in full or file by file. For the user side, see [Shelf](../usage/Shelf.md).
+The shelf is Shelve Changes: chosen files are saved as a named patch and taken out of the work tree, then applied again later, in full or file by file. For the user side, see [Shelf](../usage/Shelf.md).
 
 ## Why we need it
 
-Git's stash (see [How Stashes Work](How-Stashes-Work.md)) is all or nothing in our UI, has no names beyond a message, and hides its files. People coming from JetBrains expect to shelve a few files, keep a copy without reverting, see each shelved file's diff and unshelve only part of it. A patch on disk gives all of that with plain git commands, and it survives `git stash clear`.
+Git's stash (see [How Stashes Work](How-Stashes-Work.md)) is all or nothing in our UI, has no names beyond a message, and hides its files. People expect to shelve a few files, keep a copy without reverting, see each shelved file's diff and unshelve only part of it. A patch on disk gives all of that with plain git commands, and it survives `git stash clear`.
 
 ## How it works
 
@@ -100,7 +100,7 @@ Conflicts come back as `OpOutcome { conflicts: true }`, so `repoStore.runOp` ope
 
 **Rebuild diffs in Rust.** Show Diff needs the original blob and the hunks, both of which the backend already has. The frontend gets an ordinary `FileDiff`.
 
-**Unshelving does not stage.** Like JetBrains, the changes come back to the work tree only (a clean `git apply` without `--index`), so new files are untracked again. Shelving resets the index of its paths to HEAD, so the staged and unstaged split is not kept.
+**Unshelving does not stage.** The changes come back to the work tree only (a clean `git apply` without `--index`), so new files are untracked again. Shelving resets the index of its paths to HEAD, so the staged and unstaged split is not kept.
 
 **Conflicts keep the shelf.** Removing a shelved change only after a clean apply means a conflicted unshelve can always be retried or undone.
 

@@ -1,5 +1,5 @@
 // Editor groups (Window > Split Right / Split Down): the editor area holds one group of tabs,
-// or several arranged by a split tree (groupLayout.ts), like JetBrains. Each group has its own
+// or several arranged by a split tree (groupLayout.ts). Each group has its own
 // strip and active tab. Only file tabs may be open in several groups: a commit, Git, branch or
 // terminal tab is one live view that cannot be shown twice. Group ids never change, so a
 // group's editors stay mounted when another group closes and it takes the room. Pure;

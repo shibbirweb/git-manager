@@ -1,10 +1,10 @@
 # How the terminal works
 
-The integrated terminal runs real shells in pseudo terminals (PTYs: the kernel device that makes a program think it talks to a terminal window) and draws them with xterm.js, like VS Code. The user side is in [Terminal](../usage/Terminal.md). Split terminals, find, file links, dropped files and the optional addons are in [How terminal features work](How-Terminal-Features-Work.md).
+The integrated terminal runs real shells in pseudo terminals (PTYs: the kernel device that makes a program think it talks to a terminal window) and draws them with xterm.js. The user side is in [Terminal](../usage/Terminal.md). Split terminals, find, file links, dropped files and the optional addons are in [How terminal features work](How-Terminal-Features-Work.md).
 
 ## Why we need it
 
-People run git commands, dev servers and tests next to their code, and VS Code and JetBrains users expect a terminal in the window. Prompts, colors, `vim` and Ctrl+C need a real PTY, not a simple output view.
+People run git commands, dev servers and tests next to their code, and users expect a terminal in the window. Prompts, colors, `vim` and Ctrl+C need a real PTY, not a simple output view.
 
 ## How it works
 
@@ -84,7 +84,7 @@ flowchart LR
 
 ## Design decisions
 
-**Kill Terminal does not ask.** CLAUDE.md asks us to confirm destructive actions, but the app cannot tell whether anything runs in a shell, so the question would come every time and teach people to click through it. The user chose VS Code's behavior on 2026-10-01. Closing a Run tab with a running script does ask, because there we know a process runs.
+**Kill Terminal does not ask.** CLAUDE.md asks us to confirm destructive actions, but the app cannot tell whether anything runs in a shell, so the question would come every time and teach people to click through it. The user chose this behavior on 2026-10-01. Closing a Run tab with a running script does ask, because there we know a process runs.
 
 **Hiding keeps shells running**, so a dev server survives a hidden panel.
 
@@ -92,7 +92,7 @@ flowchart LR
 
 **Raw bytes, not strings.** xterm joins a UTF-8 character split between two chunks; decoding each chunk ourselves would break it.
 
-**A clean exit closes, an error stays**, with "[Process exited with code N]", like VS Code.
+**A clean exit closes, an error stays**, with "[Process exited with code N]".
 
 ## Tests
 

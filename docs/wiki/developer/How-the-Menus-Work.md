@@ -4,7 +4,7 @@ Nibtree builds its own native menu bar: Nibtree, File, Edit, View, Code, Git, Wi
 
 ## Why we need it
 
-Mac users look for commands, and their keys, in the menu bar. Tauri's default menu had only the basics, and its Cmd+W closed the whole window. JetBrains and VS Code users also expect File, Edit, Code and Git menus with the keys they know.
+Mac users look for commands, and their keys, in the menu bar. Tauri's default menu had only the basics, and its Cmd+W closed the whole window. Users also expect File, Edit, Code and Git menus with the keys they know.
 
 The menu is built from the **frontend** with `@tauri-apps/api/menu`, because the items, their actions and their state all live in the Svelte stores.
 
@@ -81,7 +81,7 @@ Undo, Redo, Delete and Select All have no guard, so they work in dialog fields; 
 
 **Send only changes, after a pause.** Store changes come in bursts (focus moves, status refreshes, edits). The pause and the diff keep IPC traffic small.
 
-**Hide items that do not apply, like JetBrains.** Continue Merge or Skip Commit appear only during an operation; grey items there would be noise.
+**Hide items that do not apply.** Continue Merge or Skip Commit appear only during an operation; grey items there would be noise.
 
 **Same functions as the buttons.** Handlers call what the views already use (`gitActions.ts`, `fileCommands`), so a menu item and its button never drift apart.
 

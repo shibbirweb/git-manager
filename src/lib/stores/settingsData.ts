@@ -42,7 +42,7 @@ export const DIFF_PANES_CHOICES: { value: DiffPanes; label: string }[] = [
 ];
 const DIFF_PANES = DIFF_PANES_CHOICES.map((choice) => choice.value);
 
-/** Where the Changes view puts its commit box: one at the bottom (JetBrains), or one per repository (VS Code). */
+/** Where the Changes view puts its commit box: one at the bottom, or one per repository. */
 export type CommitBoxLayout = "single" | "perRepo";
 export const COMMIT_BOX_LAYOUT_CHOICES: { value: CommitBoxLayout; label: string }[] = [
   { value: "single", label: "Single" },
@@ -300,7 +300,7 @@ export interface Preferences {
   fileIcons: FileIconMode;
   /** Sidebars, editor groups and the bottom panel as rounded panels with space between them. Any color theme. */
   roundedPanels: boolean;
-  /** A glow in the project's Welcome page color at the left of the window's top bar, like JetBrains IDEs. */
+  /** A glow in the project's Welcome page color at the left of the window's top bar. */
   projectColorHeader: boolean;
   /** The file toolbar above the code, under it, or hidden (Cmd+Up then shows the Navigation Bar floating). */
   fileToolbar: FileToolbarPlacement;
@@ -333,9 +333,9 @@ export interface Preferences {
   editorCursorBlinking: EditorCursorBlinking;
   /** Glide the cursor to its new place instead of jumping. */
   editorCursorSmoothCaret: boolean;
-  /** Pixels the cursor reaches above the text (Sublime Text's caret_extra_top). */
+  /** Pixels the cursor reaches above the text. */
   editorCaretExtraTop: number;
-  /** Pixels the cursor reaches below the text (Sublime Text's caret_extra_bottom). */
+  /** Pixels the cursor reaches below the text. */
   editorCaretExtraBottom: number;
   /** Type the closing bracket or quote with the opening one. */
   editorAutoCloseBrackets: boolean;

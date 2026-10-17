@@ -62,7 +62,7 @@ They close like any other tab; closing a terminal tab stops its shell.
 
 ## The path bar
 
-One slim bar sits between the tabs and the code, like in JetBrains editors.
+One slim bar sits between the tabs and the code.
 
 On the left are the **breadcrumbs**: the workspace folder, then each folder down to the file. Repository folders are marked with a git icon. Hover it to see it in full; click it, or press Cmd+Up, to browse: see [Navigation Bar](Navigation-Bar.md).
 

@@ -1,4 +1,4 @@
-//! Revert or apply one change of a commit (or between two revisions) in the work tree, like JetBrains' Revert
+//! Revert or apply one change of a commit (or between two revisions) in the work tree (Revert
 //! and Cherry-Pick Selected Changes. Both sides are read at their revisions (the newer one may be the work tree
 //! itself), the patch holds only the selected lines, and `git apply` changes the work tree file alone after a
 //! `--check`, so a change that no longer fits the file changes nothing. The index is never touched.

@@ -4,7 +4,7 @@ When a merge, rebase, cherry-pick or revert stops on conflicts, Nibtree shows a 
 
 ## Why we need it
 
-Resolving conflicts is the reason this app exists, and different conflicts need different tools: **whole files** (yours or theirs, the only option for binary and "deleted on one side" conflicts), **inline markers** in the editor, like VS Code, and **the merge tool** for real conflicts in a file.
+Resolving conflicts is the reason this app exists, and different conflicts need different tools: **whole files** (yours or theirs, the only option for binary and "deleted on one side" conflicts), **inline markers** in the editor, and **the merge tool** for real conflicts in a file.
 
 Git stays in charge: we read its state and run its own `--continue`, `--abort` and `--skip`, so the result matches the terminal.
 

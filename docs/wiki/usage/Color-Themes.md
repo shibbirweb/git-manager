@@ -64,7 +64,7 @@ High contrast themes have their own group at the end of each list:
 - **The terminal:** its 16 colors, background, cursor and selection, also in terminals that are already open.
 - **Mermaid diagrams** in the Markdown preview. See [Markdown Editor](Markdown-Editor.md).
 
-Islands Light and Islands Dark bring the colors of the JetBrains themes. For their rounded, spaced-out panels, turn on **Rounded panels** in Settings > Appearance; it works with every theme. See [Rounded Panels](Rounded-Panels.md).
+Islet Light and Islet Dark are made for rounded panels. For their rounded, spaced-out panels, turn on **Rounded panels** in Settings > Appearance; it works with every theme. See [Rounded Panels](Rounded-Panels.md).
 
 Every theme is checked for readable text. Text on the editor and on panels has a contrast of at least 4.5 to 1 (7 to 1 in high contrast themes), selected text stays readable, and diff colors stand out from the background. Where a theme's own colors would fail, Nibtree adjusts them a little.
 

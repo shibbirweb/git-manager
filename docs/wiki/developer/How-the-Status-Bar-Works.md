@@ -4,7 +4,7 @@ The status bar runs along the bottom of the window: on the left the active repos
 
 ## Why we need it
 
-In a workspace with many repositories, it is easy to lose track of which repository and branch a file belongs to, and which one the sidebars act on. VS Code's status bar has a repository picker with an **Auto** entry that makes the active repository follow the active editor, and people expect the same.
+In a workspace with many repositories, it is easy to lose track of which repository and branch a file belongs to, and which one the sidebars act on. People expect a status bar with a repository picker and an **Auto** entry that makes the active repository follow the active editor.
 
 Memory is a feature of this app (see [Architecture](Architecture.md)), so we show it honestly, counted the way Activity Monitor counts it. And when something goes wrong, reporting it should take one click, with the version already filled in.
 
@@ -73,7 +73,7 @@ The left side reads the same answer: with Auto it describes the screen's reposit
 
 ### Sync
 
-After the branch comes VS Code's Synchronize Changes item. It is the same button as the Sync button of a repository row in Changes, so both use `rowSync`, `rowSyncBadge` and `rowSyncTooltip` from `views/changes/sync.ts` and run `syncFromRow` from `views/changes/repoActions.ts`:
+After the branch comes the Synchronize Changes item. It is the same button as the Sync button of a repository row in Changes, so both use `rowSync`, `rowSyncBadge` and `rowSyncTooltip` from `views/changes/sync.ts` and run `syncFromRow` from `views/changes/repoActions.ts`:
 
 ```mermaid
 flowchart TD
@@ -119,7 +119,7 @@ The star button calls `updates.openRepository()`. The bug button opens a small m
 
 **Reuse statuses, do not query.** The status of every repository is already in memory, so following the screen is only a `$derived`.
 
-**Auto by default, like VS Code.** Most people expect the sidebars to act on the file they are looking at. Pinning one repository stays one click away, and the choice is remembered in `state.json` because it is a habit, not a preference to edit by hand.
+**Auto by default.** Most people expect the sidebars to act on the file they are looking at. Pinning one repository stays one click away, and the choice is remembered in `state.json` because it is a habit, not a preference to edit by hand.
 
 **Pre-fill, do not collect.** The bug link carries the version and OS in the URL, and the user sees and sends the form themselves. The app gathers no other data.
 

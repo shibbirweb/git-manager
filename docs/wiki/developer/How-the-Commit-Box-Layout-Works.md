@@ -4,7 +4,7 @@ This chapter explains how the commit box moves between one box under the Changes
 
 ## Why we need it
 
-JetBrains IDEs have one commit box at the bottom and a picker for the repository. VS Code gives every repository in Source Control its own message box. People who switch from VS Code with a workspace of several repositories want to see and write every message at once, while others prefer the short list and one fixed place. The user asked for both, switched from the Changes title bar and from Settings.
+One commit box at the bottom with a picker for the repository is short and always in the same place. A message box per repository suits a workspace of several repositories: people there want to see and write every message at once, while others prefer the short list and one fixed place. The user asked for both, switched from the Changes title bar and from Settings.
 
 ## How it works
 
@@ -29,7 +29,7 @@ flowchart TD
 
 - `bottom`: the single box, with a top border and, with several repositories, the **Commit to** picker.
 - `top`: the same box above a list (the Changes tab), with the border at its foot.
-- `section`: inside a repository's section. No picker (the section names the repository), a 56 px message instead of 96 px, a transparent background, and no Sync Changes button, since the section header (`RepoActions`) already has push, pull and publish. The placeholder names the branch, as VS Code does.
+- `section`: inside a repository's section. No picker (the section names the repository), a 56 px message instead of 96 px, a transparent background, and no Sync Changes button, since the section header (`RepoActions`) already has push, pull and publish. The placeholder names the branch.
 
 `RepoSection.svelte` gets `commitBox` and renders the box under its header, before the Conflicts, Staged and Changes groups, while the section is expanded.
 

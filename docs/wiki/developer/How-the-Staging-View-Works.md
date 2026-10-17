@@ -4,7 +4,7 @@ The staging view shows a file of the Changes diff in three panes: HEAD, the inde
 
 ## Why we need it
 
-The two-pane diff shows either the staged or the unstaged half of a file, so a file with both needs two clicks to understand. PhpStorm shows both halves at once around the index, and stages or unstages from the bands. We already had every piece: the 3-pane frame and bands of the merge tool and the merge commit view.
+The two-pane diff shows either the staged or the unstaged half of a file, so a file with both needs two clicks to understand. The staging view shows both halves at once around the index, and stages or unstages from the bands. We already had every piece: the 3-pane frame and bands of the merge tool and the merge commit view.
 
 ## How it works
 
@@ -23,7 +23,7 @@ flowchart LR
 
 A band's arrow calls `ThreeWayEditors.taken(side, index)`, which `takeChange` builds: the index text with the change's lines from that side. `changesSelection.applyDiffChange` writes it to the index, the same path as the two-pane arrows. The new status reloads both diffs; `StagingDiffs` keeps a diff whose texts did not change, and `ThreePaneDiff` keeps the middle pane's scroll position when it rebuilds.
 
-The colors follow VS Code: `paneTones` (`threeWay.ts`) makes the left pane older and the right newer when `rightNewer` is set; `parentMarks` and `resultMarks` give each mark that `tone`, the middle the opposite end of its side, and `toneColors` (`mergeExtensions.ts`) draws `old` in `--diff-removed` and `new` in `--diff-added`. `MergeFrame`'s `colors` fades each band from its older pane to its newer one. A merge's conflicts keep their color, and the merge tool sets no tone.
+For the colors, `paneTones` (`threeWay.ts`) makes the left pane older and the right newer when `rightNewer` is set; `parentMarks` and `resultMarks` give each mark that `tone`, the middle the opposite end of its side, and `toneColors` (`mergeExtensions.ts`) draws `old` in `--diff-removed` and `new` in `--diff-added`. `MergeFrame`'s `colors` fades each band from its older pane to its newer one. A merge's conflicts keep their color, and the merge tool sets no tone.
 
 Every diff draws the same `DiffToolbar.svelte`: the two-pane `DiffView` and `ThreePaneDiff` pass the counter, the `layout` (`three`, `sideBySide` or `inline`), the Three panes tooltip and what they offer, so a button or a fix reaches both. `threeWayBlame.ts` puts Blame on one pane (`blame.pane`: the work tree here, the merge result for a merge commit). **Open File** shows when the caller passes `workingFile`; it calls `openWorkingFile` (`diff/openWorkingFile.ts`, shared with `DiffView`) at `ThreeWayEditors.lineOnScreen("right")`, the working tree's line.
 

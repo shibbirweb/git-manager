@@ -4,7 +4,7 @@ This chapter explains Untitled tabs (File > New File, Cmd+N) and Remember unsave
 
 ## Why we need it
 
-Editors like Sublime Text let you type into a new tab without picking a file first, and never lose that text or unsaved edits when you quit. Before this, every tab was a file, and closing the window asked you to throw unsaved edits away (Cmd+Q did not even ask). People use the editor as a scratch pad, so both gaps hurt.
+Many editors let you type into a new tab without picking a file first, and never lose that text or unsaved edits when you quit. Before this, every tab was a file, and closing the window asked you to throw unsaved edits away (Cmd+Q did not even ask). People use the editor as a scratch pad, so both gaps hurt.
 
 ## How it works
 
@@ -73,7 +73,7 @@ sequenceDiagram
 
 **Files on disk, not state.json.** Texts can be large, and `state.json` is rewritten often and shared between windows. One file per tab means a write touches only that tab.
 
-**Closing a tab by hand still asks.** That is a clear choice to drop the text; keeping it silently would surprise people, and Sublime Text asks too.
+**Closing a tab by hand still asks.** That is a clear choice to drop the text; keeping it silently would surprise people.
 
 **Restore by folder for files, by workspace for Untitled tabs.** A file's edits belong to the file, so they come back in any workspace holding it. Untitled text has no other home than the workspace it was typed in.
 

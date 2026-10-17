@@ -28,7 +28,7 @@ flowchart LR
 
 **Block widgets come from state, not from a `ViewPlugin`.** Widgets that change line heights, like the "Accept Current | Accept Incoming" row above a conflict, come from `EditorView.decorations.compute([conflictField], ...)`, because CodeMirror needs block decorations before layout. `ViewPlugin`s are fine for things that do not move lines: the inline blame note, the scrollbar markers, diff chunk classes, measuring the conflict row width (`barWidth`).
 
-**A layer drawn behind the text can be hidden.** CodeMirror draws the selection behind the text, so an opaque line background covers it. That is why `editor/activeLine.ts` highlights the current line only while nothing is selected, like VS Code and JetBrains.
+**A layer drawn behind the text can be hidden.** CodeMirror draws the selection behind the text, so an opaque line background covers it. That is why `editor/activeLine.ts` highlights the current line only while nothing is selected.
 
 ## Keys and panels
 

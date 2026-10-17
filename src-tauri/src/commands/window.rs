@@ -212,7 +212,7 @@ fn create_window(
 }
 
 /// Like the main window in tauri.conf.json: no system title strip on macOS, so the close, minimize and zoom buttons
-/// sit at the left of the app's own top bar, centered on its back arrow, like JetBrains IDEs.
+/// sit at the left of the app's own top bar, centered on its back arrow.
 #[cfg(target_os = "macos")]
 fn mac_title_bar<'a, R: tauri::Runtime, M: tauri::Manager<R>>(
     builder: WebviewWindowBuilder<'a, R, M>,

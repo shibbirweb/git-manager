@@ -1,4 +1,4 @@
-<!-- One notification, drawn like the JetBrains IDEs draw them: the kind's icon in a circle, a bold title, where it came
+<!-- One notification, drawn: the kind's icon in a circle, a bold title, where it came
      from, the detail (kept selectable) and an action link. The balloon floats as a toast with a shadow and holds
      itself open while the pointer is over it; the row sits in the notification list with its time after the source
      and an unread dot.

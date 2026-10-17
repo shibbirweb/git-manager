@@ -67,7 +67,7 @@ describe("workspaceShortcut", () => {
     ).toBeNull();
   });
 
-  it("maps the JetBrains Navigation Bar keys: Cmd+Up on macOS, Alt+Home elsewhere", () => {
+  it("maps the Navigation Bar keys: Cmd+Up on macOS, Alt+Home elsewhere", () => {
     expect(workspaceShortcut(press("ArrowUp", "ArrowUp", { metaKey: true }), idle, mac)).toBe("navigationBar");
     expect(workspaceShortcut(press("Home", "Home", { altKey: true }), idle, windows)).toBe("navigationBar");
     expect(
@@ -87,7 +87,7 @@ describe("workspaceShortcut", () => {
     expect(textFieldKeeps("edit.navigationBar", null)).toBe(false);
   });
 
-  it("maps the JetBrains Search Everywhere keys", () => {
+  it("maps the Search Everywhere keys", () => {
     expect(workspaceShortcut(press("o", "KeyO", { metaKey: true }), idle, mac)).toBe("goToClass");
     expect(workspaceShortcut(press("F", "KeyF", { metaKey: true, shiftKey: true }), idle, mac)).toBe("findInFiles");
     // Option turns O into another character on macOS: matched by the physical key.

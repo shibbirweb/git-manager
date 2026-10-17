@@ -1,4 +1,4 @@
-// The changes of the side by side diff as lines, like JetBrains IDEs draw them: each side keeps its own lines (no
+// The changes of the side by side diff as lines: each side keeps its own lines (no
 // padding), a band joins a change's lines on both sides, and scrolling maps lines through the changes.
 import type { Chunk } from "@codemirror/merge";
 import type { Text } from "@codemirror/state";

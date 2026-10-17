@@ -1,7 +1,7 @@
 <!-- The window layout: header and banners on top, activity bars on the outer edges, a resizable side panel on each
      side, the editor area with an optional bottom panel, and the status bar. Panel sizes are data the user drags;
      they are kept so the editor area never gets narrower or shorter than its minimum. In the rounded look the window
-     frame shows around the panels, and `tint` lights its top left corner in the project's color, like JetBrains. -->
+     frame shows around the panels, and `tint` lights its top left corner in the project's color. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { presetVar, type ProjectTint, type ViewHeight } from "../logic/presets";

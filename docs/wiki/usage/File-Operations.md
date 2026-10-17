@@ -1,6 +1,6 @@
 # File Operations
 
-You can create, rename, copy, move and delete files and folders right in the [Files panel](Files-Panel.md), like in VS Code or a JetBrains IDE. These are plain file changes on your disk. Git notices them by itself, so a moved file shows up in [Changes](Changes-and-Commits.md) as deleted in one place and new in the other (or as renamed, once you stage both sides).
+You can create, rename, copy, move and delete files and folders right in the [Files panel](Files-Panel.md). These are plain file changes on your disk. Git notices them by itself, so a moved file shows up in [Changes](Changes-and-Commits.md) as deleted in one place and new in the other (or as renamed, once you stage both sides).
 
 ![File operations in the Files panel menu](../images/file-ops-menu.png)
 
@@ -30,7 +30,7 @@ With several rows selected, the menu has **Cut**, **Copy**, **Paste**, **Move to
 
 A top-level workspace folder (see [Workspaces](Workspaces.md)) offers only **New File...**, **New Folder...** and **Paste**: it cannot be renamed, moved or trashed from here. Right-click the empty space below the rows, or an empty folder, to create or paste into the workspace folder itself.
 
-When a name is taken, a copy gets a new one, as in VS Code: `cart copy.ts`, then `cart copy 2.ts`. A move or a new name never replaces a file that is already there: you see a message such as "cart.ts already exists in src" and nothing changes.
+When a name is taken, a copy gets a new one: `cart copy.ts`, then `cart copy 2.ts`. A move or a new name never replaces a file that is already there: you see a message such as "cart.ts already exists in src" and nothing changes.
 
 ![Renaming a file](../images/file-ops-rename.png)
 

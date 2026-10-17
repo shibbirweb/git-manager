@@ -1,10 +1,10 @@
 # How the Git menu works
 
-The Git menu of the native menu bar holds every git command, laid out like JetBrains' Git menu. This chapter covers what decides its state, what its items run, the Current File tabs, patches and GitHub links. The user side is in [Git Menu](../usage/Git-Menu.md). The menu bar itself is in [How the menus work](How-the-Menus-Work.md), and the dialogs it opens in [How the Git dialogs work](How-the-Git-Dialogs-Work.md).
+The Git menu of the native menu bar holds every git command. This chapter covers what decides its state, what its items run, the Current File tabs, patches and GitHub links. The user side is in [Git Menu](../usage/Git-Menu.md). The menu bar itself is in [How the menus work](How-the-Menus-Work.md), and the dialogs it opens in [How the Git dialogs work](How-the-Git-Dialogs-Work.md).
 
 ## Why we need it
 
-The user asked for JetBrains' Git menu: one place for every command, with familiar keys (Cmd+K, Cmd+T, Cmd+9, Option+Cmd+A). It also made room in the header, whose Fetch, Pull, Push and Stash buttons moved into this menu (see [How remotes work](How-Remotes-Work.md)). The Current File submenu adds per-file history and compares that the app did not have.
+The user asked for one Git menu: one place for every command, with familiar keys (Cmd+K, Cmd+T, Cmd+9, Option+Cmd+A). It also made room in the header, whose Fetch, Pull, Push and Stash buttons moved into this menu (see [How remotes work](How-Remotes-Work.md)). The Current File submenu adds per-file history and compares that the app did not have.
 
 ## How it works
 
@@ -60,7 +60,7 @@ flowchart TD
 ```
 
 - `create_patch` runs `git diff` (HEAD to index, index to work tree, or HEAD to work tree; the empty tree before the first commit) and `create_commit_patch` runs `git format-patch -1 --stdout`. Both add `--binary` and explicit `a/` `b/` prefixes, so a user's `diff.noprefix` never breaks the patch.
-- `apply_patch` applies to the work tree only, like JetBrains. If that fails, a 3-way merge can still apply it with conflicts, using the base blobs the patch names.
+- `apply_patch` applies to the work tree only. If that fails, a 3-way merge can still apply it with conflicts, using the base blobs the patch names.
 - `read_clipboard_text` reads the clipboard natively (`pbpaste` on macOS), because the web view only allows a clipboard read right after a click in the page. The frontend checks the text looks like a patch first.
 
 ### Links to the remote's web page
@@ -84,7 +84,7 @@ Open Repository in Browser and the GitHub link items only build URLs and open th
 
 **One function per action, shared.** A menu item calls the same code as its button in Changes, the banner or the Log, so they cannot drift apart.
 
-**Hide what does not apply.** Operation items appear only during an operation, like JetBrains, instead of sitting grey.
+**Hide what does not apply.** Operation items appear only during an operation, instead of sitting grey.
 
 **History in tabs.** Show History and compares open as editor tabs, so several can stay open next to the code, with Back and Forward.
 

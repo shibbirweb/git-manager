@@ -4,7 +4,7 @@ This chapter explains the Revert button on each change of the Changes diff and t
 
 ## Why we need it
 
-Staging one change was already one click, but throwing one away meant selecting its lines and running Discard Selected Lines, or editing by hand. PhpStorm and GitLens put a revert action on every change, and users expect it in both the diff and the editor.
+Staging one change was already one click, but throwing one away meant selecting its lines and running Discard Selected Lines, or editing by hand. A revert action on every change is common, and users expect it in both the diff and the editor.
 
 ## How it works
 

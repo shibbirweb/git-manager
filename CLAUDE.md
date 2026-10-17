@@ -1,6 +1,6 @@
 # Nibtree
 
-Native macOS Git client (Tauri 2) with a JetBrains-style 3-way merge tool, VS Code-style workspaces, tabs, blame and history. Rust backend in `src-tauri/`, Svelte 5 + TypeScript UI in `src/`, CodeMirror 6 for every text pane.
+Native macOS Git client (Tauri 2) with a 3-way merge tool, workspaces, tabs, blame and history. Rust backend in `src-tauri/`, Svelte 5 + TypeScript UI in `src/`, CodeMirror 6 for every text pane.
 
 ## Commands
 

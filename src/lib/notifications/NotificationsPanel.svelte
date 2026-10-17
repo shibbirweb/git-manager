@@ -1,4 +1,4 @@
-<!-- The Notifications panel in the right sidebar, like the JetBrains IDEs' tool window: every message of this session
+<!-- The Notifications panel in the right sidebar: every message of this session
      (pull, push, fetch, errors...), newest first, with any link that still works. Each one closes on its own x, Clear
      All empties the list, and the bell toggles Do Not Disturb. While it is shown, nothing pops up as a toast. -->
 <script lang="ts">

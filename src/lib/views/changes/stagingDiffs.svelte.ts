@@ -1,4 +1,4 @@
-// The Changes diff's staging view, like JetBrains IDEs: HEAD | the index | the work tree. Loads both diffs of the
+// The Changes diff's staging view: HEAD | the index | the work tree. Loads both diffs of the
 // selected file (HEAD against the index, the index against the work tree) and offers them the way the 3-pane diff
 // takes them: each side pane against the index in the middle.
 import { api, errorMessage } from "$lib/api";

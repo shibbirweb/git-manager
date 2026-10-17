@@ -1,10 +1,10 @@
 # How workspaces work
 
-A workspace is one or more folders opened together, like a VS Code multi-root workspace, each holding any number of git repositories (nested too) or none. The user side is in [Workspaces](../usage/Workspaces.md).
+A workspace is one or more folders opened together (a multi-root workspace), each holding any number of git repositories (nested too) or none. The user side is in [Workspaces](../usage/Workspaces.md).
 
 ## Why we need it
 
-Many people keep several projects in one folder, so, like VS Code, we open any folder and find every repository inside:
+Many people keep several projects in one folder, so, we open any folder and find every repository inside:
 
 - **The backend finds repositories.** Scanning runs in Rust; only the list of roots crosses the bridge.
 - **The UI uses absolute paths.** Two folders can both contain `src/index.ts`, so we convert to repo-relative paths only for git.
@@ -55,7 +55,7 @@ Workspace files (`.nibtree-workspace` and VS Code `.code-workspace`) and which f
 
 ### Showing or hiding the activity bars
 
-The activity bars are the icon strips at each edge. Two header buttons left of the theme button, and View > Left Activity Bar and Right Activity Bar, call `settings.toggleActivityBar(side)`, which flips `leftBarVisible` or `rightBarVisible` (default `true`) in `state.json`. `Workspace.svelte` leaves a hidden bar out, and `ACTIVITY_BARS` counts 44 px per visible bar in the panel width math. The button icon, `views/LayoutToggleIcon.svelte`, is a small window with that side filled while the bar shows, like VS Code's layout controls.
+The activity bars are the icon strips at each edge. Two header buttons left of the theme button, and View > Left Activity Bar and Right Activity Bar, call `settings.toggleActivityBar(side)`, which flips `leftBarVisible` or `rightBarVisible` (default `true`) in `state.json`. `Workspace.svelte` leaves a hidden bar out, and `ACTIVITY_BARS` counts 44 px per visible bar in the panel width math. The button icon, `views/LayoutToggleIcon.svelte`, is a small window with that side filled while the bar shows.
 
 ## Where the code lives
 

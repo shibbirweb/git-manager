@@ -4,7 +4,7 @@ Markdown files open with a formatting toolbar and three views: the text, the tex
 
 ## Why we need it
 
-Most repositories keep their README and docs in Markdown. Raw text is tiring to read, and checking a table or a diagram in a browser breaks the flow. JetBrains IDEs and VS Code show a preview next to the text. Previewing cloned files is also a security surface, since Markdown may carry raw HTML.
+Most repositories keep their README and docs in Markdown. Raw text is tiring to read, and checking a table or a diagram in a browser breaks the flow. Code editors show a preview next to the text. Previewing cloned files is also a security surface, since Markdown may carry raw HTML.
 
 ## How it works
 
@@ -122,7 +122,7 @@ Headless Chrome, 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 
 **Cmd+B hid the sidebar instead of making text bold.**
 - **The issue:** the Bold tooltip says Cmd+B, but in the text editor it hid the sidebar.
 - **Why it happened:** the Markdown keymap bound only Cmd+I and Cmd+K.
-- **The fix and why we chose it:** it binds Cmd+B and prevents the default, so the sidebar key skips it ([Menu Keys and Routing](Menu-Keys-and-Routing.md)). One bold key in both editors, like VS Code, beats a tooltip per mode.
+- **The fix and why we chose it:** it binds Cmd+B and prevents the default, so the sidebar key skips it ([Menu Keys and Routing](Menu-Keys-and-Routing.md)). One bold key in both editors, beats a tooltip per mode.
 
 **Memory grew with long Markdown files and open Markdown tabs.**
 - **The issue:** the memory readout kept climbing while a long file with many mermaid diagrams was open, and every open Markdown tab added more.

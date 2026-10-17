@@ -1,10 +1,10 @@
 # How blame works
 
-Blame shows who last changed each line, when and in which commit, like GitLens in VS Code: a faint note at the end of the cursor line and an optional gutter, and a click on either opens that commit in the Log. The user side is in [Blame](../usage/Blame.md).
+Blame shows who last changed each line, when and in which commit: a faint note at the end of the cursor line and an optional gutter, and a click on either opens that commit in the Log. The user side is in [Blame](../usage/Blame.md).
 
 ## Why we need it
 
-When a line looks wrong, the first question is "who changed this and why?". The user asked for GitLens: the answer next to the code, and one click to the commit that explains it.
+When a line looks wrong, the first question is "who changed this and why?". The user asked for the answer next to the code, and one click to the commit that explains it.
 
 We run the git CLI (`git blame --porcelain`) instead of libgit2's blame, for three reasons:
 
@@ -90,7 +90,7 @@ sequenceDiagram
 
 **Compartments for the switches.** Turning the note or gutter on or off reconfigures the open editor. Rebuilding it would lose the cursor and undo history.
 
-**Cmd+click opens the Log, Cmd+Option-click copies.** The first version copied the hash on click; the user asked for the GitLens behavior. The note needs Cmd so it never catches a click meant for the code (see [Blame Bugs We Fixed](Blame-Bugs-We-Fixed.md)); gutter blocks open with a plain click.
+**Cmd+click opens the Log, Cmd+Option-click copies.** The first version copied the hash on click; the user asked for it to open the commit instead. The note needs Cmd so it never catches a click meant for the code (see [Blame Bugs We Fixed](Blame-Bugs-We-Fixed.md)); gutter blocks open with a plain click.
 
 ## Bugs we fixed
 

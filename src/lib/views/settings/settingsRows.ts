@@ -1,6 +1,6 @@
 // Settings rows drawn from a list, shared by the Settings dialog and its search index.
 
-/** Sublime Text's caret_extra_top and caret_extra_bottom. */
+/** How far the cursor reaches above and below the text. */
 export const CARET_EXTRA_ROWS: {
   key: "editorCaretExtraTop" | "editorCaretExtraBottom";
   label: string;

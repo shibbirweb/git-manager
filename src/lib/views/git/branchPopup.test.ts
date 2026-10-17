@@ -28,7 +28,7 @@ function find(rows: BranchActionRow[], label: string): BranchActionItem | undefi
 }
 
 describe("branches popup", () => {
-  it("offers JetBrains' actions for another local branch", () => {
+  it("offers the actions for another local branch", () => {
     const rows = localBranchActions(local("feature", { upstream: "origin/feature" }), context);
     expect(labels(rows)).toEqual([
       "Checkout",

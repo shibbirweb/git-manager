@@ -1,6 +1,6 @@
 # Scripts
 
-The Scripts panel lists the scripts of your projects and runs them with one click, like the npm and Composer windows of JetBrains IDEs. No need to remember whether a project uses npm, pnpm or yarn.
+The Scripts panel lists the scripts of your projects and runs them with one click. No need to remember whether a project uses npm, pnpm or yarn.
 
 ![The Scripts panel](../images/scripts-panel.png)
 

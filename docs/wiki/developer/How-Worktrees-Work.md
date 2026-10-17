@@ -84,7 +84,7 @@ git2 opens a linked worktree folder like any repository. `RepoInfo.worktree` is 
 
 ## Design decisions
 
-**Folder next to the main worktree.** JetBrains does the same. A sibling folder is easy to find, never ends up inside the repository (where it would show as untracked), and the name says which branch it holds.
+**Folder next to the main worktree.** A sibling folder is easy to find, never ends up inside the repository (where it would show as untracked), and the name says which branch it holds.
 
 **Only branches git will accept.** Filtering out checked-out branches in the dialog avoids a git error after the user filled in the form.
 

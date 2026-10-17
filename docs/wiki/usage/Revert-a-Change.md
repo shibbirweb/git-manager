@@ -1,6 +1,6 @@
 # Revert a Change
 
-Sometimes you want to throw away one change in a file and keep the rest. Revert does that for a single change, like Rollback in PhpStorm or Revert Change in GitLens. A "change" (git calls it a hunk) is one block of lines that differ, with unchanged lines around it.
+Sometimes you want to throw away one change in a file and keep the rest. Revert does that for a single change. A "change" (git calls it a hunk) is one block of lines that differ, with unchanged lines around it.
 
 You can revert in the Changes diff, in a commit's diff, and in the file editor. A commit's diff can also **apply** one of its changes to your working tree.
 
@@ -49,7 +49,7 @@ Conflict blocks have their own bar and are not reverted this way; use the confli
 
 Every diff that shows a commit, in the History panel or a commit tab, has two buttons on each change. A branch compare has them too.
 
-- The curved arrow, **Revert this change in the working tree**, takes that change out of your working tree file. Its lines go back to how they were before the commit, like JetBrains' Revert Selected Changes.
+- The curved arrow, **Revert this change in the working tree**, takes that change out of your working tree file. Its lines go back to how they were before the commit.
 - **»**, **Apply this change to the working tree**, copies that change into your file, like cherry-picking (copying a commit onto your branch) one change instead of a whole commit.
 
 Inline, the same buttons sit on the first line of each change. Revert asks first, and both leave the index alone and offer **Undo**. If your file has changed too much around those lines, nothing happens and a message says so.

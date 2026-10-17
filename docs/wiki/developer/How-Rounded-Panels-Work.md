@@ -1,10 +1,10 @@
 # How rounded panels work
 
-This chapter explains how the **Rounded panels** setting turns the workspace into separate rounded panels, like the JetBrains Islands themes, in any color theme. The user side is in [Rounded Panels](../usage/Rounded-Panels.md).
+This chapter explains how the **Rounded panels** setting turns the workspace into separate rounded panels, in any color theme. The user side is in [Rounded Panels](../usage/Rounded-Panels.md).
 
 ## Why we need it
 
-JetBrains IDEs since 2025.3 default to the Islands themes: tool windows and the editor float as rounded "islands" on the window color. Users asked for the same look. We first tied it to our Islands Light and Islands Dark themes, then made it a setting of its own, because the shape is a layout choice and people want it with their favorite colors too.
+With rounded panels, tool windows and the editor float as rounded "islets" on the window color. Users asked for this look. We first tied it to our Islet Light and Islet Dark themes, then made it a setting of its own, because the shape is a layout choice and people want it with their favorite colors too.
 
 ## How it works
 
@@ -50,7 +50,7 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 
 ### Tabs
 
-With rounded panels on, `EditorTabs.svelte` gives the library's `TabStrip` the `rounded` look, which draws pill tabs: the strip takes the editor background, each tab is 26px tall with a 6px radius, and the separators and the accent line on top are gone. The active tab uses `--selected` with an outline mixed from `--accent`. In an unfocused split group it uses `--selected-inactive` and `--border-strong`, like JetBrains.
+With rounded panels on, `EditorTabs.svelte` gives the library's `TabStrip` the `rounded` look, which draws pill tabs: the strip takes the editor background, each tab is 26px tall with a 6px radius, and the separators and the accent line on top are gone. The active tab uses `--selected` with an outline mixed from `--accent`. In an unfocused split group it uses `--selected-inactive` and `--border-strong`.
 
 ## Where the code lives
 
@@ -72,7 +72,7 @@ With rounded panels on, `EditorTabs.svelte` gives the library's `TabStrip` the `
 
 **An attribute, not a component prop.** CSS on one root attribute keeps every component unaware of the setting and avoids remounting editors and terminals. It is the same pattern as `data-ligatures` and `data-contrast`.
 
-**Separate from the color theme.** Shape and color are independent choices. The Islands themes only bring the JetBrains colors; the setting brings the shape for every theme.
+**Separate from the color theme.** Shape and color are independent choices. The Islet themes only bring colors; the setting brings the shape for every theme.
 
 **A derived frame instead of `--bg`.** Many themes paint `--bg` and `--panel` the same, which would hide the gaps. A tested token keeps the look working in all 41 themes.
 
@@ -88,7 +88,7 @@ See [Rounded Panels Bugs We Fixed](Rounded-Panels-Bugs-We-Fixed.md).
 
 - `settingsData.test.ts`: the default, `true`, and a non-boolean value falling back to off.
 - `catalog.test.ts`: for every theme, `--frame` is at least 5 CIELAB units from `--panel` and `--editor-bg`, and `--text` keeps its contrast minimum on it; `--frame` is in all three `colors.css` blocks.
-- The look itself needs a visual check: `rounded-panels` and `rounded-panels-islands-light` in `scripts/screenshots.ts`.
+- The look itself needs a visual check: `rounded-panels` and `rounded-panels-islet-light` in `scripts/screenshots.ts`.
 
 ## Keeping in sync
 

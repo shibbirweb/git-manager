@@ -19,7 +19,7 @@ type EntrySpec = [label: string, keywords?: string, parent?: string];
 const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
   appearance: [
     ["Theme", "light dark system mode macos appearance"],
-    ["Rounded panels", "islands corners gap radius layout"],
+    ["Rounded panels", "corners gap radius layout"],
     ["Project color in the top bar", "header title bar tint gradient glow welcome tile"],
     ["File toolbar", "path bar breadcrumbs navigation top bottom hidden"],
     ...FILE_TOOLBAR_SWITCHES.map((part): EntrySpec => [part.label, `file toolbar ${part.hint}`, "File toolbar"]),
@@ -71,7 +71,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
     ["Stored", "local history clear disk usage"],
     ["Preview and blame", "markdown annotate"],
     ["Markdown preview", "md view render"],
-    ["Current line blame", "annotate author inline git lens"],
+    ["Current line blame", "annotate author inline"],
     ["Blame gutter", "annotate author column"],
   ],
   merge: [
@@ -88,7 +88,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
     ["Commit identity", "author"],
     ["Name and email", "user name email author identity"],
     ["Commit messages", "message"],
-    ["Commit box", "commit box per repository single bottom vs code jetbrains layout"],
+    ["Commit box", "commit box per repository single bottom layout"],
     ["Message history", "recent commit messages"],
     ["Subject line guide", "72 characters length commit message"],
     ["Templates", "commit message template"],

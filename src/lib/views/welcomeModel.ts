@@ -1,4 +1,4 @@
-// The welcome screen's project list, like JetBrains: one list of recent workspaces and
+// The welcome screen's project list: one list of recent workspaces and
 // folders, each with a colored badge of its initials, filtered by the search field and walked
 // with the arrow keys. Pure, so it is tested without a window.
 

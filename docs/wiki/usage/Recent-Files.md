@@ -1,6 +1,6 @@
 # Recent Files
 
-Recent Files is a small popup that lists the files you worked on last, newest first. It works like **Recent Files** in JetBrains IDEs such as PhpStorm: press Cmd+E, then Enter, and you are back in the file you had open before this one.
+Recent Files is a small popup that lists the files you worked on last, newest first. Press Cmd+E, then Enter, and you are back in the file you had open before this one.
 
 ![Recent Files with the last files opened](../images/recent-files.png)
 
@@ -65,7 +65,7 @@ The lists already saved are kept. Turn the setting on again and each workspace g
 
 ## In the commit message
 
-While you type a commit message, Cmd+E opens your earlier commit messages instead, as in JetBrains IDEs. You can turn that off with **Settings > Git > Message history**; then Cmd+E opens Recent Files there too. See [Changes and Commits](Changes-and-Commits.md).
+While you type a commit message, Cmd+E opens your earlier commit messages instead. You can turn that off with **Settings > Git > Message history**; then Cmd+E opens Recent Files there too. See [Changes and Commits](Changes-and-Commits.md).
 
 ## Related
 

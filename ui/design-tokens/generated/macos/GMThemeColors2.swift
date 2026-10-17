@@ -173,7 +173,7 @@ extension GMTheme {
 }
 
 extension GMTheme {
-    static func intellijLight() -> [String: GMRGBA] {
+    static func classicLight() -> [String: GMRGBA] {
         [
             "bg": GMRGBA(242, 242, 242, 1), "frame": GMRGBA(223, 223, 223, 1), "panel": GMRGBA(242, 242, 242, 1),
             "panelAlt": GMRGBA(232, 232, 232, 1), "border": GMRGBA(209, 209, 209, 1),
@@ -214,7 +214,7 @@ extension GMTheme {
 }
 
 extension GMTheme {
-    static func islandsLight() -> [String: GMRGBA] {
+    static func isletLight() -> [String: GMRGBA] {
         [
             "bg": GMRGBA(233, 234, 238, 1), "frame": GMRGBA(233, 234, 238, 1), "panel": GMRGBA(255, 255, 255, 1),
             "panelAlt": GMRGBA(247, 248, 249, 1), "border": GMRGBA(233, 234, 238, 1),

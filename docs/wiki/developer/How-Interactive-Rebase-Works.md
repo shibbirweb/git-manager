@@ -1,6 +1,6 @@
 # How interactive rebase works
 
-Interactive rebase lets the user reorder, reword, edit, squash, fix up and drop commits in a dialog, like JetBrains. The dialog edits a list; the backend turns it into git's todo and runs `git rebase -i` without ever opening an editor. The user side is in [Interactive Rebase](../usage/Interactive-Rebase.md).
+Interactive rebase lets the user reorder, reword, edit, squash, fix up and drop commits in a dialog. The dialog edits a list; the backend turns it into git's todo and runs `git rebase -i` without ever opening an editor. The user side is in [Interactive Rebase](../usage/Interactive-Rebase.md).
 
 ## Why we need it
 

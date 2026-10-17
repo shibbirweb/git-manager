@@ -4,7 +4,7 @@ Nibtree notices changes on its own: an edit in another editor, a commit in the t
 
 ## Why we need it
 
-- **No refresh button hunting.** Changes, the Files panel, the Log and the branch names should follow what happens on disk, like VS Code.
+- **No refresh button hunting.** Changes, the Files panel, the Log and the branch names should follow what happens on disk.
 - **No polling.** Asking git for every status every few seconds costs CPU and memory in big workspaces. The operating system's file events are free until something changes.
 - **Only the right repository refreshes.** In a folder with fifty repositories, an edit in one must not reread the other forty-nine.
 

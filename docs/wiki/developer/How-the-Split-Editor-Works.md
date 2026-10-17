@@ -4,7 +4,7 @@ This chapter explains how editor groups are kept, split, drawn and saved. The us
 
 ## Why we need it
 
-Reading one file while writing another is everyday work: a test next to its code, a caller above its function. The first split editor had two groups side by side. The user asked for **Split Down** like JetBrains, and for the full JetBrains grid: any group can be split again, right or down, so one tall file can sit next to two stacked ones.
+Reading one file while writing another is everyday work: a test next to its code, a caller above its function. The first split editor had two groups side by side. The user asked for **Split Down**, and for a full grid: any group can be split again, right or down, so one tall file can sit next to two stacked ones.
 
 ## How it works
 
@@ -69,11 +69,11 @@ The Window menu has Split Right (Cmd+\\), Split Down, Move Tab to Next Group, Fo
 
 ## Design decisions
 
-**A binary tree, like JetBrains.** Every split has two sides, so a ratio per split is all the sizing there is, and closing a group only has to promote its sibling.
+**A binary tree.** Every split has two sides, so a ratio per split is all the sizing there is, and closing a group only has to promote its sibling.
 
 **One flat list on the page.** Nesting the groups in the tree would re-mount a group's editors whenever a split above it appeared or went away, losing scroll, undo and unsaved views. Absolute placement keeps each group's DOM where it is.
 
-**A new split always makes a new group.** The two-group version sent Split Right to the existing right group. With a grid, splitting the group you are in is what JetBrains and VS Code do.
+**A new split always makes a new group.** The two-group version sent Split Right to the existing right group. With a grid, splitting the group you are in is what people expect.
 
 **Ratios live in the layout.** The old global `editorSplitRatio` in `state.json` could only size one split. Each split now keeps its own ratio and is saved with the folder's tabs.
 

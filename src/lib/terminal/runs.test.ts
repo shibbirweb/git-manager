@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { runAfterClose, runFinishedMessage, runHeader } from "./runs";
 
 describe("run messages", () => {
-  it("prints the command above and the exit code below, like JetBrains", () => {
+  it("prints the command above and the exit code below", () => {
     const header = runHeader({
       runId: "x",
       program: "pnpm",

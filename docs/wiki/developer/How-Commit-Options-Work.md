@@ -1,10 +1,10 @@
 # How commit options work
 
-The commit box has two controls next to the Commit button: an arrow with **Commit & Push**, **Commit & Sync** and **Commit (Amend)**, and a gear with JetBrains' **Commit Options** (sign-off, author, GPG signing, skip hooks). This chapter shows how both reach `git commit`. The user side is in [Commit Options](../usage/Commit-Options.md).
+The commit box has two controls next to the Commit button: an arrow with **Commit & Push**, **Commit & Sync** and **Commit (Amend)**, and a gear with **Commit Options** (sign-off, author, GPG signing, skip hooks). This chapter shows how both reach `git commit`. The user side is in [Commit Options](../usage/Commit-Options.md).
 
 ## Why we need it
 
-People who come from JetBrains IDEs expect the commit dialog's options, and some projects require them: a `Signed-off-by` trailer for the Developer Certificate of Origin, signed commits on protected branches, or committing a patch in its author's name. "Commit and push" is the most common next step, so VS Code's dropdown saves a trip to the menu. Before, the only way to get these was the terminal.
+People expect the commit dialog's options, and some projects require them: a `Signed-off-by` trailer for the Developer Certificate of Origin, signed commits on protected branches, or committing a patch in its author's name. "Commit and push" is the most common next step, so a dropdown saves a trip to the menu. Before, the only way to get these was the terminal.
 
 ## How it works
 

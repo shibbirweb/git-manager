@@ -12,7 +12,7 @@ Open **Settings > Appearance > File icons**, or use **View > File Icons** in the
 | --- | --- | --- |
 | **No icons** | One plain file icon for every file, as before. | Nothing extra is loaded. |
 | **Minimal** | Simple shapes, colored by type: code, JSON, Markdown, images, archives, lock files and more. The colors follow your color theme. | A small icon set is loaded. |
-| **Material Icons** | Full colored icons for over 1,000 file types, from the Material Icon Theme that many VS Code users know. | A bigger icon set is loaded. Uses the most memory. |
+| **Material Icons** | Full colored icons for over 1,000 file types, from the Material Icon Theme. | A bigger icon set is loaded. Uses the most memory. |
 
 The level applies at once. You do not need to restart.
 

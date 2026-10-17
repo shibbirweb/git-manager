@@ -2870,14 +2870,14 @@ define(
 );
 
 define(
-  "rounded-panels-islands-light",
+  "rounded-panels-islet-light",
   async (shot) => {
-    await waitForColorTheme(shot, "islands-light");
+    await waitForColorTheme(shot, "islet-light");
     await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-rounded-panels"));
     await overview(shot);
     await shot.save();
   },
-  () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "islands-light", roundedPanels: true } }),
+  () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "islet-light", roundedPanels: true } }),
 );
 
 define(

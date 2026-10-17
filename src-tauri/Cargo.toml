@@ -1,7 +1,7 @@
 [package]
 name = "nibtree"
 version = "0.1.0-beta.10"
-description = "Native Git GUI with a JetBrains-style 3-way merge tool"
+description = "Native Git GUI with a 3-way merge tool"
 authors = ["MD. Shibbir Ahmed"]
 homepage = "https://github.com/shibbirweb/nibtree"
 repository = "https://github.com/shibbirweb/nibtree"

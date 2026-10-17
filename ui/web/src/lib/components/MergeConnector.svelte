@@ -1,8 +1,8 @@
 <!-- The column between two merge or diff panes: a ribbon per chunk joining its lines on both sides, and the chunk's
      buttons (apply its side's change, ignore it, or revert it in its own pane) at its top, kept inside the column
      while any of the chunk shows. Each button shows only with its handler, so a read-only diff draws ribbons alone.
-     Ribbons take their chunk's kind color, or fade from the old side's red to the new side's green, like VS Code
-     and GitLens: `oldToNew` when the old side is on the left, `newToOld` when it is on the right. The app
+     Ribbons take their chunk's kind color, or fade from the old side's red to the new side's green:
+     `oldToNew` when the old side is on the left, `newToOld` when it is on the right. The app
      measures; this draws. -->
 <script lang="ts">
   import type { ChunkKind } from "../logic/mergeGeometry";

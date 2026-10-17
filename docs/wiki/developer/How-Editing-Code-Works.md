@@ -61,7 +61,7 @@ Most commands are CodeMirror's own (`toggleComment`, `deleteLine`, `moveLineUp`,
 
 **One table, two users.** The editor keymaps and the menu accelerators come from `EDITOR_SHORTCUTS`, and a test checks that each key is bound to the menu item's own command. A menu can never show a key that does something else.
 
-**JetBrains keys where they clash.** Cmd+D adds the next occurrence, as in VS Code, so Duplicate takes Shift+Cmd+D. Cmd+L is Go to Line, as in JetBrains (CodeMirror's select line is Ctrl+L on macOS and stays). The fold keys use Option+Cmd+] and [ because Cmd+= and Cmd+- stay with zoom.
+**Editor keys where they clash.** Cmd+D adds the next occurrence, so Duplicate takes Shift+Cmd+D. Cmd+L is Go to Line (CodeMirror's select line is Ctrl+L on macOS and stays). The fold keys use Option+Cmd+] and [ because Cmd+= and Cmd+- stay with zoom.
 
 ## Tests
 

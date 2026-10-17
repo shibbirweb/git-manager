@@ -71,7 +71,7 @@ function edgeButton(view: EditorView, element: HTMLElement, edge: "top" | "botto
 }
 
 /**
- * A fold names the code after it, like JetBrains IDEs ("Api > DistrictController > store()"), over a wavy line;
+ * A fold names the code after it ("Api > DistrictController > store()"), over a wavy line;
  * code outside any declaration shows the count. `labelLine` is the line the name is read at.
  */
 class FoldWidget extends WidgetType {

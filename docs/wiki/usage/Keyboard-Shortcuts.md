@@ -79,7 +79,7 @@ The Code menu's keys (comments, duplicate, move and delete lines, folding, Go to
 | Ctrl+Shift+- | Go Forward |
 | Esc | Close the open dialog, menu or popup |
 
-Ctrl+- really is Control, not Command, as in VS Code on the Mac. See [Search Everywhere](Search-Everywhere.md), [Recent Files](Recent-Files.md), [Navigation Bar](Navigation-Bar.md) and [Navigation](Navigation.md).
+Ctrl+- really is Control, not Command, on the Mac. See [Search Everywhere](Search-Everywhere.md), [Recent Files](Recent-Files.md), [Navigation Bar](Navigation-Bar.md) and [Navigation](Navigation.md).
 
 ## Terminal and bottom panel
 

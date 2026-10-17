@@ -1,6 +1,6 @@
 # Search Everywhere
 
-Search Everywhere is one popup that finds files, classes, functions and text in every folder of your workspace. It works like the popup of the same name in JetBrains IDEs: press Shift twice and start typing.
+Search Everywhere is one popup that finds files, classes, functions and text in every folder of your workspace. Press Shift twice and start typing.
 
 ![Search Everywhere on the All tab](../images/search-everywhere-all.png)
 

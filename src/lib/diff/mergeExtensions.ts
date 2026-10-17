@@ -83,7 +83,7 @@ export const diffTheme = EditorView.theme({
   "&.cm-merge-a .cm-gutters .cm-changedLineGutter, &.cm-merge-b .cm-gutters .cm-changedLineGutter": {
     background: "var(--diff-modified-edge)",
   },
-  // A fold, like JetBrains IDEs: the code's scope in small dim text over a wavy line, no box.
+  // A fold: the code's scope in small dim text over a wavy line, no box.
   "&.cm-editor .cm-content .cm-diffFold": {
     display: "flex",
     alignItems: "center",
@@ -180,7 +180,7 @@ export function revertButton(title: string, iconName: IconName): HTMLElement {
 }
 
 /**
- * The two-pane diff's colors, like VS Code and GitLens: changed lines red on the old side and green on the new,
+ * The two-pane diff's colors: changed lines red on the old side and green on the new,
  * with stronger tints on the changed words. The three-pane views keep the kind colors of `diffTheme`.
  */
 export const sideColors = [

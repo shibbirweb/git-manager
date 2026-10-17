@@ -19,13 +19,13 @@ public enum GMTheme {
         GMThemeInfo(id: "gruvbox-light", name: "Gruvbox Light", kind: "light"),
         GMThemeInfo(id: "tokyo-night-day", name: "Tokyo Night Day", kind: "light"),
         GMThemeInfo(id: "rose-pine-dawn", name: "Rosé Pine Dawn", kind: "light"),
-        GMThemeInfo(id: "intellij-light", name: "IntelliJ Light", kind: "light"),
-        GMThemeInfo(id: "islands-light", name: "Islands Light", kind: "light"),
-        GMThemeInfo(id: "vscode-light-plus", name: "VS Code Light+", kind: "light"),
+        GMThemeInfo(id: "classic-light", name: "Classic Light", kind: "light"),
+        GMThemeInfo(id: "islet-light", name: "Islet Light", kind: "light"),
+        GMThemeInfo(id: "light-plus", name: "Light+", kind: "light"),
         GMThemeInfo(id: "gm-dark", name: "Nibtree Dark", kind: "dark"),
-        GMThemeInfo(id: "darcula", name: "Darcula", kind: "dark"),
-        GMThemeInfo(id: "islands-dark", name: "Islands Dark", kind: "dark"),
-        GMThemeInfo(id: "vscode-dark-plus", name: "VS Code Dark+", kind: "dark"),
+        GMThemeInfo(id: "dusk", name: "Dusk", kind: "dark"),
+        GMThemeInfo(id: "islet-dark", name: "Islet Dark", kind: "dark"),
+        GMThemeInfo(id: "dark-plus", name: "Dark+", kind: "dark"),
         GMThemeInfo(id: "one-dark-pro", name: "One Dark Pro", kind: "dark"),
         GMThemeInfo(id: "dracula", name: "Dracula", kind: "dark"),
         GMThemeInfo(id: "monokai", name: "Monokai", kind: "dark"),
@@ -66,13 +66,13 @@ public enum GMTheme {
         case "gruvbox-light": return gruvboxLight()
         case "tokyo-night-day": return tokyoNightDay()
         case "rose-pine-dawn": return rosePineDawn()
-        case "intellij-light": return intellijLight()
-        case "islands-light": return islandsLight()
-        case "vscode-light-plus": return vscodeLightPlus()
+        case "classic-light": return classicLight()
+        case "islet-light": return isletLight()
+        case "light-plus": return lightPlus()
         case "gm-dark": return gmDark()
-        case "darcula": return darcula()
-        case "islands-dark": return islandsDark()
-        case "vscode-dark-plus": return vscodeDarkPlus()
+        case "dusk": return dusk()
+        case "islet-dark": return isletDark()
+        case "dark-plus": return darkPlus()
         case "one-dark-pro": return oneDarkPro()
         case "dracula": return dracula()
         case "monokai": return monokai()

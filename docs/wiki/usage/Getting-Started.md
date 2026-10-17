@@ -26,7 +26,7 @@ Nibtree uses the `git` already installed on your computer for every change it ma
 
 ## First launch
 
-When nothing is open you see the welcome screen, laid out like the one in JetBrains IDEs (see [Welcome Screen](Welcome-Screen.md)).
+When nothing is open you see the welcome screen (see [Welcome Screen](Welcome-Screen.md)).
 
 ![Welcome screen](../images/welcome.png)
 

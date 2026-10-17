@@ -104,7 +104,7 @@ describe("pull command", () => {
 });
 
 describe("reset", () => {
-  it("offers JetBrains' four modes, Hard marked as dangerous", () => {
+  it("offers the four reset modes, Hard marked as dangerous", () => {
     expect(RESET_MODES.map((mode) => mode.value)).toEqual(["soft", "mixed", "hard", "keep"]);
     expect(RESET_MODES.filter((mode) => mode.danger).map((mode) => mode.value)).toEqual(["hard"]);
   });

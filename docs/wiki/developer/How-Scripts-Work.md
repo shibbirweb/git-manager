@@ -1,6 +1,6 @@
 # How scripts work
 
-The Scripts tool window lists the runnable scripts of the workspace folders and runs one as its own process in the bottom panel's Run tab, with the Node version the project asks for. It copies JetBrains' npm and Composer windows and its Run window. The user side is in [Scripts](../usage/Scripts.md).
+The Scripts tool window lists the runnable scripts of the workspace folders and runs one as its own process in the bottom panel's Run tab, with the Node version the project asks for. It has npm and Composer windows and a Run window. The user side is in [Scripts](../usage/Scripts.md).
 
 ## Why we need it
 
@@ -85,13 +85,13 @@ The MCP tools `list_scripts`, `run_script` and `stop_run` go through the same `s
 
 ## Design decisions
 
-**No shell.** The first version typed `PATH=<bin>:"$PATH" pnpm run dev` into a new terminal. That depended on the shell's syntax (fish, PowerShell and cmd differ), and it gave no clean exit code, Rerun or Stop. Starting the program directly, like JetBrains, fixes all of these.
+**No shell.** The first version typed `PATH=<bin>:"$PATH" pnpm run dev` into a new terminal. That depended on the shell's syntax (fish, PowerShell and cmd differ), and it gave no clean exit code, Rerun or Stop. Starting the program directly, fixes all of these.
 
-**The login shell's environment, read once**, like JetBrains. Reading it per run would add about a second to every start.
+**The login shell's environment, read once**. Reading it per run would add about a second to every start.
 
 **Node first on `PATH`, not `nvm use`.** Putting the version's `bin` folder first works for every manager and needs no shell.
 
-**Run With is not saved** (`runnerOverrides.svelte.ts`). It is a quick override, like an unsaved JetBrains run configuration. The Node choice is saved, because a project's Node needs rarely change.
+**Run With is not saved** (`runnerOverrides.svelte.ts`). It is a quick override, like an unsaved run configuration. The Node choice is saved, because a project's Node needs rarely change.
 
 **Running again asks.** Stopping a dev server by accident is costly, so the panel asks before restarting a running script. The Rerun button is an explicit restart, so it does not ask.
 

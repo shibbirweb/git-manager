@@ -4,7 +4,7 @@
 
 ## Why we need it
 
-Writing a correct pattern by hand is easy to get wrong: a pattern without a leading `/` matches at every depth, and characters like `*`, `[` or a leading `#` change its meaning. People also expect an ignored file to disappear from Changes, but git keeps tracking a file that is already committed. JetBrains IDEs solve both from a right-click; this is the same.
+Writing a correct pattern by hand is easy to get wrong: a pattern without a leading `/` matches at every depth, and characters like `*`, `[` or a leading `#` change its meaning. People also expect an ignored file to disappear from Changes, but git keeps tracking a file that is already committed. Both are solved from a right-click; this is the same.
 
 ## How it works
 

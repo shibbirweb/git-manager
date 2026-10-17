@@ -1,6 +1,6 @@
 # How the merge tool works
 
-The merge tool is the JetBrains-style three pane view (Yours, Result, Theirs) with connectors and apply and ignore buttons per change. The user side is in [Merge Tool](../usage/Merge-Tool.md).
+The merge tool is three pane view (Yours, Result, Theirs) with connectors and apply and ignore buttons per change. The user side is in [Merge Tool](../usage/Merge-Tool.md).
 
 ## Why we need it
 
@@ -59,7 +59,7 @@ Lines split on `\n` as in CodeMirror, so a Rust `LineRange` matches the editor l
 
 `initialChunks` marks the unchanged side done. Each button calls a pure function in `model.ts` and dispatches the result as one transaction:
 
-- `applySide` replaces the chunk's result lines with one side. On a conflict, a second apply **appends** the other side, as in JetBrains.
+- `applySide` replaces the chunk's result lines with one side. On a conflict, a second apply **appends** the other side.
 - `ignoreSide` marks a side handled without touching the text.
 - `applyNonConflicting` applies every unresolved, unedited non-conflict chunk, optionally from one side.
 - `acceptWholeSide` replaces the whole result (Accept Left and Accept Right).

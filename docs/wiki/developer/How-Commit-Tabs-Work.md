@@ -4,7 +4,7 @@ A commit from the Log can open in its own editor tab, so its diff gets the whole
 
 ## Why we need it
 
-The details pane under the Log is good for a quick look, but it shares the height with the commit list. A big change is hard to read there. VS Code opens a commit's changes as an editor tab, and people coming from it expect the same: double-click, read it full size, close the tab when done, keep the Log where it was.
+The details pane under the Log is good for a quick look, but it shares the height with the commit list. A big change is hard to read there. People expect to open a commit's changes as an editor tab: double-click, read it full size, close the tab when done, keep the Log where it was.
 
 ## How it works
 

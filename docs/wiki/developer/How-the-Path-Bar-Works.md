@@ -6,7 +6,7 @@ Every file tab has one slim bar between the tab strip and the code: the path and
 
 The editor used to draw two rows above the code: a title row with the breadcrumbs, the badges and a copy button, and an actions row with the change arrows, the counter and a **Blame** button with a text label. Both rows wrapped, so together they took about 90 px, more in a narrow editor. On a laptop screen that is several lines of code lost on every tab.
 
-JetBrains IDEs show the same information in one line: the path, then a few icon buttons at the right edge. The user asked for that look, so the code starts right under the tabs.
+One line can show the same information: the path, then a few icon buttons at the right edge. The user asked for that look, so the code starts right under the tabs.
 
 ## How it works
 
@@ -63,11 +63,11 @@ The breadcrumbs shorten all the time, as needed. The crumbs may shrink, the badg
 
 ## Design decisions
 
-**One bar, like JetBrains.** Text labels became icon buttons with tooltips, and the path shortens instead of wrapping. The code gains about 60 px on every tab, and the bar looks the same in every file.
+**One bar.** Text labels became icon buttons with tooltips, and the path shortens instead of wrapping. The code gains about 60 px on every tab, and the bar looks the same in every file.
 
-**Tools keep their own row.** Conflict buttons and Markdown formatting are things you use, not information, and their text labels or many buttons would crowd the bar. They show only when they apply, and the conflict strip is tinted like the editor notifications in JetBrains, so it reads as a temporary state.
+**Tools keep their own row.** Conflict buttons and Markdown formatting are things you use, not information, and their text labels or many buttons would crowd the bar. They show only when they apply, and the conflict strip is tinted like an editor notification, so it reads as a temporary state.
 
-**The view switch moved into the bar.** It changes how the whole tab looks, like the JetBrains Markdown editor's switch at the top right, and it keeps the formatting row free for formatting.
+**The view switch moved into the bar.** It changes how the whole tab looks, like a Markdown editor's switch at the top right, and it keeps the formatting row free for formatting.
 
 **Collapse in a fixed order.** The counter is the least needed part (the change ticks beside the scrollbar show the same), so it goes first. Badges keep their color as dots. The file name and the buttons stay to the end, because they are what you came for.
 

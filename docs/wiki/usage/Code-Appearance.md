@@ -10,7 +10,7 @@ These settings are in [Settings](Settings.md#editor), **Editor**. They apply to 
 
 **Editor font weight** sets how thick code is drawn. Drag the slider from **Thin** (100) to **Black** (900), in steps of 100. The default is **Regular** (400). Double-click the slider to go back to it. The preview above the slider shows the result before you close Settings.
 
-For a soft, calm look like JetBrains IDEs on a dark theme, try **Light** (300) with JetBrains Mono. Bold text in code, such as Markdown headings, stays a little heavier than the weight you pick.
+For a soft, calm look on a dark theme, try **Light** (300) with JetBrains Mono. Bold text in code, such as Markdown headings, stays a little heavier than the weight you pick.
 
 The weight needs a font that has it. JetBrains Mono, SF Mono and most variable fonts have every weight. A font with only Regular and Bold, such as Menlo, uses the closest one it has.
 
@@ -40,7 +40,7 @@ Turn it off to see every file as plain text and save memory. Off, Nibtree loads 
 
 ## The cursor
 
-The cursor settings work like VS Code's, plus Sublime Text's caret height:
+The cursor settings work, plus the cursor's extra height:
 
 - **Cursor style**: **Line** (the default), **Line thin**, **Block**, **Block outline**, **Underline** or **Underline thin**. A block is see-through.
 - **Cursor width**: how thick the Line cursor is, 1 to 6 pixels (2 by default).
@@ -54,7 +54,7 @@ The line with the cursor has a soft background. While you select text, the highl
 
 ## Word wrap
 
-**Word wrap** breaks long lines at the edge of the editor. Turn it on or off with **View > Word Wrap** or **Option+Z**, like VS Code, or in Settings. The top line stays where it is. Diffs and the merge tool never wrap, so their sides stay lined up.
+**Word wrap** breaks long lines at the edge of the editor. Turn it on or off with **View > Word Wrap** or **Option+Z**, or in Settings. The top line stays where it is. Diffs and the merge tool never wrap, so their sides stay lined up.
 
 ## Indentation
 

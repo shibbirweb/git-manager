@@ -1,6 +1,6 @@
 # How notifications work
 
-Every message the app shows (a push, a failed pull, an Undo after a discard) goes through one toast store. The store pops it up as a balloon and records it in a history that the Notifications panel lists. The look follows the JetBrains IDEs: balloons in the bottom right corner and a Notifications tool window on the right.
+Every message the app shows (a push, a failed pull, an Undo after a discard) goes through one toast store. The store pops it up as a balloon and records it in a history that the Notifications panel lists. The look: balloons in the bottom right corner and a Notifications tool window on the right.
 
 ## Why we need it
 

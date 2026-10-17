@@ -1,4 +1,4 @@
-// Links the two sides of a MergeView that each scroll themselves (no padding, like JetBrains IDEs): the line at the
+// Links the two sides of a MergeView that each scroll themselves (no padding): the line at the
 // center of the side being scrolled is mapped through the changes to the other side, and the connector's bands are
 // measured for the changes on screen. Changes come from @codemirror/merge, so highlights, folds and staging stay.
 import type { MergeView } from "@codemirror/merge";

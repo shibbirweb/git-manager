@@ -102,7 +102,7 @@ export function actionAvailable(entry: NotificationEntry, nowMs: number): boolea
 
 /**
  * Do Not Disturb keeps everything but errors off screen; they are still recorded. Nothing pops up while the list is
- * shown, since new messages appear there at once (as in the JetBrains IDEs).
+ * shown, since new messages appear there at once.
  */
 export function shouldPopUp(kind: NotificationKind, doNotDisturb: boolean, listShown = false): boolean {
   if (listShown) {

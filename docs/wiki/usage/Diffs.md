@@ -26,7 +26,7 @@ To see both versions in one column instead, click **Inline** in the toolbar. See
 
 ## Reading the diff
 
-- Like VS Code and GitLens, old lines are soft red on the left and new lines green on the right, and the changed words are stronger.
+- Old lines are soft red on the left and new lines green on the right, and the changed words are stronger.
 - The strip next to the scrollbar has a tick for every change. Click a tick to jump there.
 
 ## Move between changes

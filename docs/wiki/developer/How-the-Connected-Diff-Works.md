@@ -1,10 +1,10 @@
 # How the connected diff works
 
-The side by side diff shows each side as plain code, with no blank padding, and draws a band between the sides for every change, like JetBrains IDEs. This page explains how. The rest of the diff is in [How diffs work](How-Diffs-Work.md); the user side is in [Diffs](../usage/Diffs.md).
+The side by side diff shows each side as plain code, with no blank padding, and draws a band between the sides for every change. This page explains how. The rest of the diff is in [How diffs work](How-Diffs-Work.md); the user side is in [Diffs](../usage/Diffs.md).
 
 ## Why we need it
 
-`@codemirror/merge`'s `MergeView` lines the two sides up by adding blank spacers to the shorter side, and both sides scroll in one container. When one side gains many lines, the other side shows a big empty gap, and it is hard to see where a block came from or went. PhpStorm keeps both texts whole, scrolls each side on its own while keeping matching lines level, and draws a curved band from a change's lines on the left to its lines on the right. People comparing the two apps asked for that look.
+`@codemirror/merge`'s `MergeView` lines the two sides up by adding blank spacers to the shorter side, and both sides scroll in one container. When one side gains many lines, the other side shows a big empty gap, and it is hard to see where a block came from or went. A connected diff keeps both texts whole, scrolls each side on its own while keeping matching lines level, and draws a curved band from a change's lines on the left to its lines on the right. The user asked for that look.
 
 ## How it works
 
@@ -36,7 +36,7 @@ The arrow on a band is **Stage this change** (Changes) or **Unstage this change*
 
 ## Fold labels
 
-A fold names the code after it, like PhpStorm: `FoldWidget` (`foldField.ts`) reads `scopeLabelAt(state, line)` (`foldScope.ts`) for the line below the fold. That uses sticky scroll's `scopeSource` (the syntax tree, markdown headings or indentation) for the enclosing blocks, takes each block's first line (or the line before a lone `{`), and `foldLabel.ts` turns them into names: `class Cart` is `Cart`, `public function store(` is `store()`, and blocks such as `if` drop out. A PHP `namespace` or Java `package` line leads the label. With no named block the bar shows the count. The wavy line is a CSS mask, so it takes the theme's `--border-strong`. The 3-pane merge diff folds the same runs in all panes and mirrors each step (`foldStep`) to the others.
+A fold names the code after it: `FoldWidget` (`foldField.ts`) reads `scopeLabelAt(state, line)` (`foldScope.ts`) for the line below the fold. That uses sticky scroll's `scopeSource` (the syntax tree, markdown headings or indentation) for the enclosing blocks, takes each block's first line (or the line before a lone `{`), and `foldLabel.ts` turns them into names: `class Cart` is `Cart`, `public function store(` is `store()`, and blocks such as `if` drop out. A PHP `namespace` or Java `package` line leads the label. With no named block the bar shows the count. The wavy line is a CSS mask, so it takes the theme's `--border-strong`. The 3-pane merge diff folds the same runs in all panes and mirrors each step (`foldStep`) to the others.
 
 ## Where the code lives
 
@@ -53,7 +53,7 @@ A fold names the code after it, like PhpStorm: `FoldWidget` (`foldField.ts`) rea
 
 - **Keep MergeView.** Writing our own two-editor diff would mean rebuilding highlights, the gutter and the chunk updates on edits. Turning off one private method is a small, contained dependency; a `@codemirror/merge` update that renames `measure` brings the padding back but breaks nothing else.
 - **Center line sync.** Mapping the center keeps the change you look at level on both sides, even inside a long added block.
-- **Arrows on the bands.** Like PhpStorm, the stage button belongs to the change it moves, so the old arrows column is gone.
+- **Arrows on the bands.** The stage button belongs to the change it moves, so the old arrows column is gone.
 
 ## Tests
 

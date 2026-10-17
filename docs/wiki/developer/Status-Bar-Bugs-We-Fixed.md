@@ -5,7 +5,7 @@ The bugs we found in the status bar and the Help links, why they happened and ho
 **The bar ignored the file on screen.**
 - **The issue:** the status bar always showed the active repository, even while you read a file from another one.
 - **Why it happened:** it read `repoStore.repo` directly.
-- **The fix and why we chose it:** `contextRepo` follows the visible file tab or diff, like VS Code, and falls back to the active repository.
+- **The fix and why we chose it:** `contextRepo` follows the visible file tab or diff, and falls back to the active repository.
 
 **Clicking the changes count did nothing.**
 - **The issue:** clicking **N changes** in the status bar seemed to do nothing.

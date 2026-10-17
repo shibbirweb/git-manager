@@ -44,7 +44,7 @@ flowchart LR
 
 ### Matching a file name
 
-`iconFor(map, fileName, light)` in `iconMatch.ts` follows VS Code: the whole name in lowercase first (`names`, or `lightNames` in a light theme), then every extension from the longest (`app.spec.ts` tries `spec.ts`, then `ts`), and `map.file` when nothing matches. Lookups use `Object.hasOwn`, so a file called `constructor` never reads `Object.prototype`. `normalizeIconMap` defaults every part of a fetched map, so a damaged file gives plain icons instead of errors.
+`iconFor(map, fileName, light)` in `iconMatch.ts` follows the icon theme's own rules: the whole name in lowercase first (`names`, or `lightNames` in a light theme), then every extension from the longest (`app.spec.ts` tries `spec.ts`, then `ts`), and `map.file` when nothing matches. Lookups use `Object.hasOwn`, so a file called `constructor` never reads `Object.prototype`. `normalizeIconMap` defaults every part of a fetched map, so a damaged file gives plain icons instead of errors.
 
 ### Drawing a row
 
@@ -86,7 +86,7 @@ The CSP in `tauri.conf.json` has `'self'` in `connect-src` so the app may fetch 
 
 **Fetch, not import.** An imported module cannot be unloaded. A fetched map is ordinary data that the garbage collector frees when the resolver is replaced, and a removed stylesheet frees its rules.
 
-**Material Icon Theme for the real icons.** It is MIT licensed, covers over 1,000 types and ships a type map we can reuse. JetBrains' own icons are not published with such a map.
+**Material Icon Theme for the real icons.** It is MIT licensed, covers over 1,000 types and ships a type map we can reuse. Other icon sets are not published with such a map.
 
 **Masks for Minimal, images for Material.** Minimal glyphs are one color, so a mask lets theme tokens color them. Material icons have their own colors, so they are plain images.
 

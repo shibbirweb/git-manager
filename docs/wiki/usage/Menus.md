@@ -49,7 +49,7 @@ These items act on the editor that has the keyboard: comments, duplicate, delete
 
 ## Git
 
-The Git menu has everything git: commit, push, pull, merge, rebase, patches, the current file's history and more, in the style of JetBrains IDEs. It has its own page: [Git Menu](Git-Menu.md).
+The Git menu has everything git: commit, push, pull, merge, rebase, patches, the current file's history and more. It has its own page: [Git Menu](Git-Menu.md).
 
 ## Window
 

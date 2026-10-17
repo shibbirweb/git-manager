@@ -144,7 +144,7 @@ describe("the staging view", () => {
     expect(takeChange(index, head, changes.left[0])).toBe(head);
   });
 
-  it("colors each change red where it is older and green where it is newer, like VS Code", () => {
+  it("colors each change red where it is older and green where it is newer", () => {
     const options = { rightNewer: true, conflicts: false };
     const changes = threeWayChanges(staged, flipHunks(unstaged), options);
     const tones = paneTones(options);

@@ -179,9 +179,8 @@
 <SettingsGroup title="Commit messages">
   <SettingsRow title="Commit box">
     {#snippet hintContent()}
-      Single puts one commit box under the Changes list, with a picker for the repository, like JetBrains IDEs. Per
-      repository puts a commit box at the top of each repository, like VS Code. The button in the Changes title bar
-      changes this setting too.
+      Single puts one commit box under the Changes list, with a picker for the repository. Per repository puts a commit
+      box at the top of each repository. The button in the Changes title bar changes this setting too.
     {/snippet}
     <Segmented
       label="Commit box"

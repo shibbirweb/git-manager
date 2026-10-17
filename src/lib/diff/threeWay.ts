@@ -1,4 +1,4 @@
-// The 3-pane diff, like JetBrains IDEs: a merge commit's file (parent 1 | the merge result | parent 2) or the staging
+// The 3-pane diff: a merge commit's file (parent 1 | the merge result | parent 2) or the staging
 // view of the Changes diff (HEAD | the index | the work tree). Each side pane's hunks against the middle give its
 // changes; in a merge, middle lines that both parents' changes touch are a conflict the merge resolved. Everything
 // here is line math on half-open, 0-based ranges.

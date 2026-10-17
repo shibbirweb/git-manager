@@ -1,10 +1,10 @@
 # How repository actions work
 
-Each repository row in the Changes sidebar has VS Code's Source Control buttons: the branch with its marks, Sync or Publish, Commit, Refresh and a **...** menu with Commit, Changes, Pull and Push, Branch, Stash and Tags submenus. This chapter explains how they are built and how every action stays in the row's repository. The user side is in [Repository Actions](../usage/Repository-Actions.md).
+Each repository row in the Changes sidebar has its own buttons: the branch with its marks, Sync or Publish, Commit, Refresh and a **...** menu with Commit, Changes, Pull and Push, Branch, Stash and Tags submenus. This chapter explains how they are built and how every action stays in the row's repository. The user side is in [Repository Actions](../usage/Repository-Actions.md).
 
 ## Why we need it
 
-Before, a repository header had a few buttons that only showed on hover, and Fetch, Pull, Push and Stash lived in the window header, where they always acted on the **active** repository. With ten repositories in a workspace, pulling one meant switching to it first, which reloads its branches and history. The user asked for VS Code's layout: every repository carries its own actions, always visible, and they act on that repository only. The header buttons moved to the Git menu ([How the Git Menu Works](How-the-Git-Menu-Works.md)), which shares the same action functions.
+Before, a repository header had a few buttons that only showed on hover, and Fetch, Pull, Push and Stash lived in the window header, where they always acted on the **active** repository. With ten repositories in a workspace, pulling one meant switching to it first, which reloads its branches and history. The user asked for a layout where every repository carries its own actions, always visible, and they act on that repository only. The header buttons moved to the Git menu ([How the Git Menu Works](How-the-Git-Menu-Works.md)), which shares the same action functions.
 
 ## How it works
 
@@ -13,7 +13,7 @@ Before, a repository header had a few buttons that only showed on hover, and Fet
 `RepoActions.svelte` renders the buttons. Everything it decides is pure and lives in `repoMenu.ts`, so it is tested without stores:
 
 - `repoActionState(head, groups, operation, busy, extras)` flattens what the menu needs: branch, upstream, ahead and behind, staged, unstaged and tracked counts, conflicts, and the stash, tag and remote counts.
-- `branchDecorations(groups)` gives VS Code's marks: `*` unstaged (untracked included), `+` staged, `!` conflicts. `branchTooltip` explains them.
+- `branchDecorations(groups)` gives the marks: `*` unstaged (untracked included), `+` staged, `!` conflicts. `branchTooltip` explains them.
 - `repoMenuItems(state, handlers)` builds the whole **...** tree with labels, hints ("2 behind", "1 ahead"), `danger` flags and disabled states.
 
 The menu opens on click, so its counts are read only then:
@@ -63,7 +63,7 @@ flowchart TD
 
 ### Sync and Publish
 
-`sync.ts` has two plans. `syncPlan` drives the commit box button and hides it when in step. `rowSync` drives the row button: hidden without a branch or with no commits yet, Publish without an upstream, and still offered when in step, where a click only pulls (VS Code does the same). `rowSyncBadge` gives "2↓ 1↑", `syncTooltip` the exact sentence.
+`sync.ts` has two plans. `syncPlan` drives the commit box button and hides it when in step. `rowSync` drives the row button: hidden without a branch or with no commits yet, Publish without an upstream, and still offered when in step, where a click only pulls. `rowSyncBadge` gives "2↓ 1↑", `syncTooltip` the exact sentence.
 
 ```mermaid
 sequenceDiagram
@@ -112,7 +112,7 @@ New for these menus: `commit_all` (`commit --all`), `undo_last_commit`, `fetch` 
 
 **Counts are read when the menu opens.** Keeping stash, tag and remote counts for every repository would mean a refs read per repository on every refresh. Reading them on click costs one call, and the active repository reuses the store's lists.
 
-**Ask before Commit All.** VS Code's "smart commit" commits everything when nothing is staged. We keep the shortcut but confirm it, and never include untracked files, so a stray file cannot slip into a commit.
+**Ask before Commit All.** A "smart commit" commits everything when nothing is staged. We keep the shortcut but confirm it, and never include untracked files, so a stray file cannot slip into a commit.
 
 **Shared actions with an optional repository.** One `push` serves the Git menu (active repository) and the row (its own), so behavior and messages never drift apart.
 

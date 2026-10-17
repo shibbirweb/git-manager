@@ -262,7 +262,7 @@
     cursor: grabbing;
   }
 
-  /* Rounded look: rounded tabs on the editor color with room around them, and a line under them like PhpStorm's
+  /* Rounded look: rounded tabs on the editor color with room around them, and a line under them
      (the strip and the code share one color, so --border, the editor color in dark themes, would not show). */
   .rounded {
     align-items: center;

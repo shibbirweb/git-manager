@@ -1,5 +1,5 @@
 <!--
-  The welcome screen, laid out like the JetBrains one: a sidebar with Projects, Customize and
+  The welcome screen: a sidebar with Projects, Customize and
   Learn, and the recent projects as one searchable list with a colored badge each.
 -->
 <script lang="ts">

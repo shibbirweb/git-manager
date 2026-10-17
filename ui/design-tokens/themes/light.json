@@ -51,7 +51,7 @@
   },
   "quiet-light": {
     "background": "#f5f5f5", "foreground": "#333333", "accent": "#705697", "selection": "#c9d0d9",
-    "ansi": "vscodeLight",
+    "ansi": "plusLight",
     "syntax": {
       "keyword": "#4b69c6", "string": "#448c27", "number": "#ab6526", "comment": "#aaaaaa", "type": "#7a3e9d",
       "function": "#aa3731", "property": "#7a3e9d", "meta": "#b2a900", "tag": "#4b69c6", "attr": "#8190a0",
@@ -138,9 +138,9 @@
       "lineNumber": "#9893a5", "activeLine": "#f4ede8", "success": "#286983", "info": "#907aa9"
     }
   },
-  "intellij-light": {
+  "classic-light": {
     "background": "#ffffff", "foreground": "#080808", "accent": "#2675bf", "selection": "#a6d2ff",
-    "ansi": "jetbrainsLight",
+    "ansi": "classicLight",
     "syntax": {
       "keyword": "#0033b3", "string": "#067d17", "number": "#1750eb", "comment": "#8c8c8c", "type": "#000000",
       "function": "#00627a", "property": "#871094", "meta": "#9e880d", "tag": "#0033b3", "attr": "#174ad4",
@@ -151,13 +151,13 @@
       "lineNumber": "#adadad", "activeLine": "#fcfaed", "success": "#067d17"
     }
   },
-  "islands-light": {
+  "islet-light": {
     "$note": [
-      "Islands Light: white islands on a grey window. Colors from ManyIslandsLight.theme.json and its \"Light\" ",
-      "editor scheme; the selection is the gray PhpStorm shows."
+      "Islet Light: white islets on a grey window. Colors from ManyIslandsLight.theme.json and its \"Light\" ",
+      "editor scheme; the selection is the gray of that editor."
     ],
     "background": "#ffffff", "foreground": "#000000", "accent": "#3871e1", "selection": "#c1c3c9",
-    "ansi": "jetbrainsLight",
+    "ansi": "classicLight",
     "syntax": {
       "keyword": "#0033b3", "string": "#067d17", "number": "#1750eb", "comment": "#8c8c8c", "type": "#000000",
       "function": "#00627a", "property": "#871094", "meta": "#9e880d", "tag": "#0033b3", "attr": "#174ad4",
@@ -169,13 +169,13 @@
       "info": "#2f5eb9"
     }
   },
-  "vscode-light-plus": {
+  "light-plus": {
     "$note": [
       "Light+ and Dark+: tokens and UI colors from the themes' published defaults. Meta is the pink of ",
       "keyword.control, which Light+ and Dark+ give preprocessor directives."
     ],
     "background": "#ffffff", "foreground": "#000000", "accent": "#007acc", "selection": "#add6ff",
-    "ansi": "vscodeLight",
+    "ansi": "plusLight",
     "syntax": {
       "keyword": "#0000ff", "string": "#a31515", "number": "#098658", "comment": "#008000", "type": "#267f99",
       "function": "#795e26", "property": "#001080", "meta": "#af00db", "tag": "#800000", "attr": "#e50000",

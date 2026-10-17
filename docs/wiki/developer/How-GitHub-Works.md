@@ -4,7 +4,7 @@ Nibtree signs in to GitHub with a personal access token kept in the system keych
 
 ## Why we need it
 
-Git cannot create a repository, sync a fork or post a gist: those are GitHub API calls, and JetBrains users expect them in the Git menu. The hard part is the token: it must never land in a file, a log, the Git Console or an error, and the UI must not keep it.
+Git cannot create a repository, sync a fork or post a gist: those are GitHub API calls, and people expect them in the Git menu. The hard part is the token: it must never land in a file, a log, the Git Console or an error, and the UI must not keep it.
 
 ## How it works
 

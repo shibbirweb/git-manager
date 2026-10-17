@@ -4,7 +4,7 @@ A merge commit has two or more parents. This page explains how the Log's commit 
 
 ## Why we need it
 
-The Log used to diff every commit against its first parent only. For a merge that shows everything the merged branch brought in, which can be dozens of files, and hides the question people usually ask: which files did the merge have to combine, and how were the conflicts resolved? PhpStorm answers this with "merged conflicts", and people comparing the two apps saw different lists for the same commit. Now both show the same files.
+The Log used to diff every commit against its first parent only. For a merge that shows everything the merged branch brought in, which can be dozens of files, and hides the question people usually ask: which files did the merge have to combine, and how were the conflicts resolved? A list of the files the merge had to combine answers this, and the Log now shows that list.
 
 ## How it works
 
@@ -51,7 +51,7 @@ The pure parts are in `diff/threeWay.ts`. Each parent's backend hunks against th
 
 ## Design decisions
 
-- **Files that differ from every parent, not "conflicts".** Git keeps no record of conflicts, so no tool can list them exactly. The rule matches git's combined diff and PhpStorm, and the UI says "Changed on both sides" because a file both branches changed in different places is listed too.
+- **Files that differ from every parent, not "conflicts".** Git keeps no record of conflicts, so no tool can list them exactly. The rule matches git's combined diff, and the UI says "Changed on both sides" because a file both branches changed in different places is listed too.
 - **The merged view is the default for merges.** It answers the common question and is short; the per-parent view is one click away.
 - **Every list is sent at once.** A merge's lists come in one call so switching views needs no round trip. Each list is a tree diff git2 does quickly; a normal commit sends empty extra lists.
 - **Parent 1 for a merged file's diff.** It shows what the other branch and the resolution brought in. The per-parent view gives the diff against parent 2.

@@ -58,7 +58,7 @@ Hold **Option** and drag to select a rectangle: one cursor per line, at the same
 
 ### Right margin line
 
-A thin line at a column, like VS Code's rulers. It is off by default; turn it on and pick the column (JetBrains uses 120).
+A thin line at a column. It is off by default; turn it on and pick the column (120 is common).
 
 Diffs and the merge tool get indent guides, word highlights, column selection and the margin line. Folding and scrolling past the end stay in the file editor, so the panes keep lining up.
 
@@ -84,7 +84,7 @@ The **Code** menu in the menu bar acts on the editor that has the focus. Its key
 
 Items that change the text are greyed out in a read-only pane (such as a diff) or while no editor has the focus.
 
-Duplicate takes Shift+Cmd+D because Cmd+D adds the next occurrence, as in VS Code. Option+Shift+Up and Down copy the line up or down.
+Duplicate takes Shift+Cmd+D because Cmd+D adds the next occurrence. Option+Shift+Up and Down copy the line up or down.
 
 ### Go to Line
 

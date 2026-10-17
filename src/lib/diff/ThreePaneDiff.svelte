@@ -1,4 +1,4 @@
-<!-- A file in three read-only panes, like JetBrains IDEs: a merge commit's parent 1, merge result and parent 2, or the
+<!-- A file in three read-only panes: a merge commit's parent 1, merge result and parent 2, or the
      staging view's HEAD, index and work tree, with bands joining each side's changes to the middle. With `onapply`
      the bands carry arrows that take a change into the middle (stage or unstage); with `workingFile`, Open File
      opens the real file; with `blame`, Blame shows who wrote each line of one pane. The panes' widths are saved.
