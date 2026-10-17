@@ -3,7 +3,7 @@
 An agent's or task's state: spinner, question mark, check, square or ring.
 
 ```ts
-import StatusIcon from "@git-manager/ui/components/StatusIcon.svelte";
+import StatusIcon from "@nibtree/ui/components/StatusIcon.svelte";
 ```
 
 Group: Feedback.

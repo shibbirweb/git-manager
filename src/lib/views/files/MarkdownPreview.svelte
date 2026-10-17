@@ -3,8 +3,8 @@
   blocks follow the Syntax highlighting setting, and images and links resolve inside the workspace.
 -->
 <script lang="ts">
-  import PreviewPage from "@git-manager/ui/components/MarkdownPreview.svelte";
-  import type { LinkTarget } from "@git-manager/ui/markdown/links";
+  import PreviewPage from "@nibtree/ui/components/MarkdownPreview.svelte";
+  import type { LinkTarget } from "@nibtree/ui/markdown/links";
   import { LanguageSupport } from "@codemirror/language";
   import type { EditorView } from "@codemirror/view";
   import { openUrl } from "@tauri-apps/plugin-opener";

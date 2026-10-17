@@ -4,15 +4,15 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { ConflictFile, ConflictSummary, FileConflictKind, Side } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Table from "@git-manager/ui/components/Table.svelte";
-  import Tag from "@git-manager/ui/components/Tag.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import type { DataColumn } from "@git-manager/ui/logic/table";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Table from "@nibtree/ui/components/Table.svelte";
+  import Tag from "@nibtree/ui/components/Tag.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import type { DataColumn } from "@nibtree/ui/logic/table";
 
   let summary = $state.raw<ConflictSummary | null>(null);
   let loadError = $state<string | null>(null);

@@ -1,15 +1,15 @@
 <!-- Search Everywhere's results: a virtual List driven by the search field (arrows, Page keys, Ctrl+N/P, Enter),
      with headings, files, symbols, "more" rows and Text matches grouped under their files. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import HighlightText from "@git-manager/ui/components/HighlightText.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import { partsToRanges } from "@git-manager/ui/logic/highlight";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import HighlightText from "@nibtree/ui/components/HighlightText.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import List from "@nibtree/ui/components/List.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import { partsToRanges } from "@nibtree/ui/logic/highlight";
   import { isSelectable, type PopupRow } from "./popupRows";
   import SymbolResult from "./SymbolResult.svelte";
   import TextResult from "./TextResult.svelte";

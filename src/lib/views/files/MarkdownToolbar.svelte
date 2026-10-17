@@ -5,12 +5,12 @@
 <script lang="ts">
   import { localKeys } from "$lib/commands/commandRuntime";
   import type { EditorState, TransactionSpec } from "@codemirror/state";
-  import { toggleInline, toggleLink } from "@git-manager/ui/markdown/format";
-  import { insertTable, setHeading, toggleCodeBlock, toggleLinePrefix } from "@git-manager/ui/markdown/formatLines";
-  import type { RichAction } from "@git-manager/ui/markdown/richEditor";
+  import { toggleInline, toggleLink } from "@nibtree/ui/markdown/format";
+  import { insertTable, setHeading, toggleCodeBlock, toggleLinePrefix } from "@nibtree/ui/markdown/formatLines";
+  import type { RichAction } from "@nibtree/ui/markdown/richEditor";
   import type { MarkdownViewMode } from "$lib/stores/settings.svelte";
-  import FormatToolbar from "@git-manager/ui/components/FormatToolbar.svelte";
-  import type { IconName } from "@git-manager/ui/icons";
+  import FormatToolbar from "@nibtree/ui/components/FormatToolbar.svelte";
+  import type { IconName } from "@nibtree/ui/icons";
   import { contextMenu } from "$lib/ui/menu.svelte";
 
   type FormatCommand = (state: EditorState) => TransactionSpec;

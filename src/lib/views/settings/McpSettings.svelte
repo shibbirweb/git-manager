@@ -4,12 +4,12 @@
   import { mcpStore } from "$lib/mcp/mcpStore.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { MCP_PORT_RANGE, parseMcpPort } from "$lib/stores/settingsData";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import CodeBlock from "@nibtree/ui/components/CodeBlock.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import SettingsGroup from "./SettingsGroup.svelte";
   import SettingsRow from "./SettingsRow.svelte";
   import { copyToClipboard, set } from "./settingsShared";

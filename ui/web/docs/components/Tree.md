@@ -3,7 +3,7 @@
 A file-tree list: folders open and close, rows indent by depth, and only rows in view are drawn.
 
 ```ts
-import Tree from "@git-manager/ui/components/Tree.svelte";
+import Tree from "@nibtree/ui/components/Tree.svelte";
 ```
 
 Group: Navigation. Also known as: Tree view, File tree.

@@ -2,16 +2,16 @@
      local and remote branches. A branch opens its submenu (Checkout, Compare, Merge, Update,
      Push...) on click, Enter or Right; Up and Down move through the list. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Divider from "@git-manager/ui/components/Divider.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Divider from "@nibtree/ui/components/Divider.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import List from "@nibtree/ui/components/List.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { onMount } from "svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { Refs } from "$lib/types";

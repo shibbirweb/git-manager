@@ -2,14 +2,14 @@
      default), adds it as a remote and pushes the current branch with upstream. A repository
      without commits gets an initial commit of every file first. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Spinner from "@git-manager/ui/components/Spinner.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Spinner from "@nibtree/ui/components/Spinner.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { onMount } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";

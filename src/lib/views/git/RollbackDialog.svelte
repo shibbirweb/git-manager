@@ -1,12 +1,12 @@
 <!-- Rollback Changes: the changed tracked files with checkboxes; their staged and
      unstaged changes go back to HEAD. New files are removed from Git, and deleted when asked. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import FileRow from "@git-manager/ui/components/FileRow.svelte";
-  import ListBox from "@git-manager/ui/components/ListBox.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import FileRow from "@nibtree/ui/components/FileRow.svelte";
+  import ListBox from "@nibtree/ui/components/ListBox.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { untrack } from "svelte";
   import { api } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";

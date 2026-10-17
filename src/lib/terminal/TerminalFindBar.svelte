@@ -4,8 +4,8 @@
   and maps the terminal's own keys (Enter searches up, like xterm's scrollback).
 -->
 <script lang="ts">
-  import FloatingFindBar from "@git-manager/ui/components/FloatingFindBar.svelte";
-  import type { SearchOptions } from "@git-manager/ui/components/SearchToggles.svelte";
+  import FloatingFindBar from "@nibtree/ui/components/FloatingFindBar.svelte";
+  import type { SearchOptions } from "@nibtree/ui/components/SearchToggles.svelte";
   import { localKeys } from "$lib/commands/commandRuntime";
   import { findBarKey, type TerminalFindOptions } from "./find";
 

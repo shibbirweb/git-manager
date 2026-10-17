@@ -3,7 +3,7 @@
 A small round dot that tells a state: a command's result, a server on or off, a run going on.
 
 ```ts
-import StatusDot from "@git-manager/ui/components/StatusDot.svelte";
+import StatusDot from "@nibtree/ui/components/StatusDot.svelte";
 ```
 
 Group: Feedback. Also known as: Dot, Indicator, Status.

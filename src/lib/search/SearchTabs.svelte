@@ -1,6 +1,6 @@
 <!-- The tab strip of the Search Everywhere popup; Tab and Shift+Tab are handled by the field. -->
 <script lang="ts">
-  import Tabs from "@git-manager/ui/components/Tabs.svelte";
+  import Tabs from "@nibtree/ui/components/Tabs.svelte";
   import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { SEARCH_TABS, type SearchTab } from "./searchTabs";
 

@@ -3,7 +3,7 @@
 A box whose element the app fills itself, such as a terminal that moves between places.
 
 ```ts
-import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
+import ElementHost from "@nibtree/ui/components/ElementHost.svelte";
 ```
 
 Group: Layout. Also known as: Mount point, Slot, Portal target.

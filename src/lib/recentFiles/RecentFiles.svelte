@@ -5,14 +5,14 @@
   list. Mounted only while open (Workspace.svelte); the list lives in recentFilesStore.svelte.ts.
 -->
 <script lang="ts">
-  import CommandPalette from "@git-manager/ui/components/CommandPalette.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Kbd from "@git-manager/ui/components/Kbd.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import ToggleButton from "@git-manager/ui/components/ToggleButton.svelte";
-  import { partsToRanges } from "@git-manager/ui/logic/highlight";
-  import type { PaletteItem } from "@git-manager/ui/logic/palette";
+  import CommandPalette from "@nibtree/ui/components/CommandPalette.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Kbd from "@nibtree/ui/components/Kbd.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import ToggleButton from "@nibtree/ui/components/ToggleButton.svelte";
+  import { partsToRanges } from "@nibtree/ui/logic/highlight";
+  import type { PaletteItem } from "@nibtree/ui/logic/palette";
   import { onMount, untrack } from "svelte";
   import { currentPlatform, localKeys, shortcutFor } from "$lib/commands/commandRuntime";
   import { formatAccelerator, matchesAccelerator } from "$lib/commands/keybinding";

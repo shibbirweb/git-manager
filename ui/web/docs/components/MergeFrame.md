@@ -3,7 +3,7 @@
 The frame of a 3-way merge whose editors the app builds: pane titles, three panes, connectors.
 
 ```ts
-import MergeFrame from "@git-manager/ui/components/MergeFrame.svelte";
+import MergeFrame from "@nibtree/ui/components/MergeFrame.svelte";
 ```
 
 Group: Editor. Also known as: Merge, Merge host.

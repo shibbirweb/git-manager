@@ -1,14 +1,14 @@
 <!-- The 3-way merge tool: a toolbar, the library's MergeFrame filled with the editors of mergeSession.svelte.ts,
      and a footer with Accept Left, Accept Right, Cancel and Apply. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Divider from "@git-manager/ui/components/Divider.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import MergeFrame from "@git-manager/ui/components/MergeFrame.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import ToggleButton from "@git-manager/ui/components/ToggleButton.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Divider from "@nibtree/ui/components/Divider.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import MergeFrame from "@nibtree/ui/components/MergeFrame.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import ToggleButton from "@nibtree/ui/components/ToggleButton.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { untrack } from "svelte";
   import { localKeys } from "$lib/commands/commandRuntime";
   import { editorLanguage } from "$lib/editor/setup";

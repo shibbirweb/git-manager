@@ -5,13 +5,13 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirro
 import { indentOnInput, syntaxHighlighting } from "@codemirror/language";
 import { EditorState, type Extension } from "@codemirror/state";
 import { EditorView, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers } from "@codemirror/view";
-import { drawRoundedSelection } from "@git-manager/ui/editor/selection";
-import { editorTheme as libraryEditorTheme } from "@git-manager/ui/editor/theme";
+import { drawRoundedSelection } from "@nibtree/ui/editor/selection";
+import { editorTheme as libraryEditorTheme } from "@nibtree/ui/editor/theme";
 import { settings } from "$lib/stores/settings.svelte";
 import { commandKeys } from "./commandKeys";
 import { codeKeymap } from "./editorCommands";
 import { findBar } from "./findPanel.svelte";
-import { codeHighlighters } from "@git-manager/ui/editor/highlighter";
+import { codeHighlighters } from "@nibtree/ui/editor/highlighter";
 import { highlightActiveLineWhenEmpty } from "./activeLine";
 import { cursorOptions, editorCursor } from "./cursor";
 import { type EditorKind, featureOptions } from "./featurePlan";

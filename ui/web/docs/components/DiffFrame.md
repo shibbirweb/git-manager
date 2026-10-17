@@ -3,7 +3,7 @@
 The frame of a diff whose editors the app builds: side names, find bar slots, body, split handle.
 
 ```ts
-import DiffFrame from "@git-manager/ui/components/DiffFrame.svelte";
+import DiffFrame from "@nibtree/ui/components/DiffFrame.svelte";
 ```
 
 Group: Editor. Also known as: Diff, Diff host.

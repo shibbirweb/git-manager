@@ -3,7 +3,7 @@
 The 3-way merge: yours, the editable result and theirs, chunks tinted and joined by ribbons.
 
 ```ts
-import MergeView from "@git-manager/ui/components/MergeView.svelte";
+import MergeView from "@nibtree/ui/components/MergeView.svelte";
 ```
 
 Group: Editor. Also known as: Merge, 3-way merge, Conflict.

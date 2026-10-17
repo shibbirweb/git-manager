@@ -101,7 +101,7 @@ mod screenshot {
         static NEXT: AtomicU64 = AtomicU64::new(1);
         let number = window_number(app, window_label)?;
         let file = std::env::temp_dir().join(format!(
-            "git-manager-screenshot-{}-{}.png",
+            "nibtree-screenshot-{}-{}.png",
             std::process::id(),
             NEXT.fetch_add(1, Ordering::Relaxed)
         ));

@@ -3,7 +3,7 @@
 A native drop-down list, styled like Input.
 
 ```ts
-import Select from "@git-manager/ui/components/Select.svelte";
+import Select from "@nibtree/ui/components/Select.svelte";
 ```
 
 Group: Forms. Also known as: Select, Native select.

@@ -3,7 +3,7 @@
 The bar across the top of the window: navigation and pickers on the left, busy work and actions right.
 
 ```ts
-import AppHeader from "@git-manager/ui/components/AppHeader.svelte";
+import AppHeader from "@nibtree/ui/components/AppHeader.svelte";
 ```
 
 Group: Layout. Also known as: Header, Title bar, Top bar.

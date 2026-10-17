@@ -5,15 +5,15 @@
 <script lang="ts">
   import { settings } from "$lib/stores/settings.svelte";
   import { windowChrome } from "$lib/stores/windowChrome.svelte";
-  import AppHeader from "@git-manager/ui/components/AppHeader.svelte";
+  import AppHeader from "@nibtree/ui/components/AppHeader.svelte";
   import { updates } from "$lib/update/updates.svelte";
-  import Divider from "@git-manager/ui/components/Divider.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Logo from "@git-manager/ui/components/Logo.svelte";
-  import Pane from "@git-manager/ui/components/Pane.svelte";
-  import SideNav from "@git-manager/ui/components/SideNav.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Divider from "@nibtree/ui/components/Divider.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Logo from "@nibtree/ui/components/Logo.svelte";
+  import Pane from "@nibtree/ui/components/Pane.svelte";
+  import SideNav from "@nibtree/ui/components/SideNav.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import WelcomeCustomize from "./welcome/WelcomeCustomize.svelte";
   import WelcomeLearn from "./welcome/WelcomeLearn.svelte";
   import WelcomeProjects from "./welcome/WelcomeProjects.svelte";

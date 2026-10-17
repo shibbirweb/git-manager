@@ -4,13 +4,13 @@
   The editor itself is fileEditor.svelte.ts; this frame lays out the bar, the conflict strip and the panes.
 -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import ElementHost from "@nibtree/ui/components/ElementHost.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import SplitPane from "@nibtree/ui/components/SplitPane.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { onMount, untrack } from "svelte";
   import { setBlameDisplay } from "$lib/editor/blame";
   import { resolveAllConflicts } from "$lib/editor/conflictDecorations";

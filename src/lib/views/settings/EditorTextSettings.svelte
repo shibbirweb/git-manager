@@ -15,17 +15,17 @@
     settings,
     TAB_SIZES,
   } from "$lib/stores/settings.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Chip from "@git-manager/ui/components/Chip.svelte";
-  import FontSample from "@git-manager/ui/components/FontSample.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Link from "@git-manager/ui/components/Link.svelte";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import Select from "@git-manager/ui/components/Select.svelte";
-  import Slider from "@git-manager/ui/components/Slider.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Chip from "@nibtree/ui/components/Chip.svelte";
+  import FontSample from "@nibtree/ui/components/FontSample.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Link from "@nibtree/ui/components/Link.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import Select from "@nibtree/ui/components/Select.svelte";
+  import Slider from "@nibtree/ui/components/Slider.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import ColorThemePicker from "./ColorThemePicker.svelte";
   import MemoryFlag from "./MemoryFlag.svelte";
   import { CARET_EXTRA_ROWS } from "./settingsRows";

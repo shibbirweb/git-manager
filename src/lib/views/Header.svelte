@@ -1,13 +1,13 @@
 <!-- The window's top bar on the UI library's AppHeader: Back and Forward, the folder, repository and branch pickers,
      the busy work, and the layout, theme and settings buttons. -->
 <script lang="ts">
-  import AppHeader from "@git-manager/ui/components/AppHeader.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Divider from "@git-manager/ui/components/Divider.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import AppHeader from "@nibtree/ui/components/AppHeader.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Divider from "@nibtree/ui/components/Divider.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { api } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";

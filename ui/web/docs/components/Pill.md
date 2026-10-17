@@ -3,7 +3,7 @@
 A rounded word that tells a state: unsaved, modified, merging, write.
 
 ```ts
-import Pill from "@git-manager/ui/components/Pill.svelte";
+import Pill from "@nibtree/ui/components/Pill.svelte";
 ```
 
 Group: Feedback. Also known as: Status badge, Label.

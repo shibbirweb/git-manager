@@ -3,7 +3,7 @@
 Lays out children in a row or a column with a gap from the spacing tokens.
 
 ```ts
-import Stack from "@git-manager/ui/components/Stack.svelte";
+import Stack from "@nibtree/ui/components/Stack.svelte";
 ```
 
 Group: Layout. Also known as: Flex, HStack, VStack, Box.

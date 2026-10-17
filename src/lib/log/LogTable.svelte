@@ -1,13 +1,13 @@
 <!-- The log's commit table: the graph, ref and bisect chips, subject, author, date and hash of each loaded commit. -->
 <script lang="ts">
-  import CommitGraph from "@git-manager/ui/components/CommitGraph.svelte";
-  import DataTable from "@git-manager/ui/components/DataTable.svelte";
-  import RefLabel from "@git-manager/ui/components/RefLabel.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Time from "@git-manager/ui/components/Time.svelte";
-  import { graphWidth } from "@git-manager/ui/logic/graphModel";
-  import type { RevealPlace } from "@git-manager/ui/logic/listWiring.svelte";
-  import type { DataColumn } from "@git-manager/ui/logic/table";
+  import CommitGraph from "@nibtree/ui/components/CommitGraph.svelte";
+  import DataTable from "@nibtree/ui/components/DataTable.svelte";
+  import RefLabel from "@nibtree/ui/components/RefLabel.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Time from "@nibtree/ui/components/Time.svelte";
+  import { graphWidth } from "@nibtree/ui/logic/graphModel";
+  import type { RevealPlace } from "@nibtree/ui/logic/listWiring.svelte";
+  import type { DataColumn } from "@nibtree/ui/logic/table";
   import type { Snippet } from "svelte";
   import { sortRefs } from "$lib/log/format";
   import { refChips } from "$lib/log/logFilter";

@@ -18,18 +18,18 @@
   } from "$lib/commands/shortcutSettings";
   import { settings } from "$lib/stores/settings.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
-  import Divider from "@git-manager/ui/components/Divider.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Kbd from "@git-manager/ui/components/Kbd.svelte";
-  import Pill from "@git-manager/ui/components/Pill.svelte";
-  import ShortcutRecorder from "@git-manager/ui/components/ShortcutRecorder.svelte";
-  import Spacer from "@git-manager/ui/components/Spacer.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
+  import Divider from "@nibtree/ui/components/Divider.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Kbd from "@nibtree/ui/components/Kbd.svelte";
+  import Pill from "@nibtree/ui/components/Pill.svelte";
+  import ShortcutRecorder from "@nibtree/ui/components/ShortcutRecorder.svelte";
+  import Spacer from "@nibtree/ui/components/Spacer.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
 
   let { filter = "" }: { filter?: string } = $props();
 

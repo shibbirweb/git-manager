@@ -3,7 +3,7 @@
 The keyboard and selection around Rows: a listbox, a tree or a plain list, optionally virtual.
 
 ```ts
-import List from "@git-manager/ui/components/List.svelte";
+import List from "@nibtree/ui/components/List.svelte";
 ```
 
 Group: Navigation. Also known as: Listbox, Tree view, Selectable list, Virtual list.

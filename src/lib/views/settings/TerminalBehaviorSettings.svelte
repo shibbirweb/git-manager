@@ -2,8 +2,8 @@
 <script lang="ts">
   import { commandKeys, localKeys } from "$lib/commands/commandRuntime";
   import { clampTerminalScrollback, settings, TERMINAL_SCROLLBACK_RANGE } from "$lib/stores/settings.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import MemoryFlag from "./MemoryFlag.svelte";
   import NumberSetting from "./NumberSetting.svelte";
   import SettingsGroup from "./SettingsGroup.svelte";

@@ -3,7 +3,7 @@
 A few lines of sample text in a chosen font, like Settings' editor and terminal previews.
 
 ```ts
-import FontSample from "@git-manager/ui/components/FontSample.svelte";
+import FontSample from "@nibtree/ui/components/FontSample.svelte";
 ```
 
 Group: Editor. Also known as: Font preview.

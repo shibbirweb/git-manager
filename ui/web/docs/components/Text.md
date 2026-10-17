@@ -3,7 +3,7 @@
 Text in a named text style from the design tokens, so words never need a class or color.
 
 ```ts
-import Text from "@git-manager/ui/components/Text.svelte";
+import Text from "@nibtree/ui/components/Text.svelte";
 ```
 
 Group: Layout. Also known as: Typography, Label, Heading.

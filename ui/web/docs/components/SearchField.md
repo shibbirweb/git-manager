@@ -3,7 +3,7 @@
 A filter box with a magnifier and a clear button, like Settings' search. Esc clears, then blurs.
 
 ```ts
-import SearchField from "@git-manager/ui/components/SearchField.svelte";
+import SearchField from "@nibtree/ui/components/SearchField.svelte";
 ```
 
 Group: Forms. Also known as: Input group, Search.

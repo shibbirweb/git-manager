@@ -3,7 +3,7 @@
 One notification: the kind's icon, a bold title, where it came from, the detail and an action link.
 
 ```ts
-import Notification from "@git-manager/ui/components/Notification.svelte";
+import Notification from "@nibtree/ui/components/Notification.svelte";
 ```
 
 Group: Feedback. Also known as: Notification, Balloon, Toast, Alert.

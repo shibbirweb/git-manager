@@ -6,11 +6,11 @@
   searchQueries.svelte.ts asks the backend and searchReplace.svelte.ts replaces.
 -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import CommandPalette from "@git-manager/ui/components/CommandPalette.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Tag from "@git-manager/ui/components/Tag.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import CommandPalette from "@nibtree/ui/components/CommandPalette.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Tag from "@nibtree/ui/components/Tag.svelte";
   import { onMount, tick, untrack } from "svelte";
   import { windowKeys, withCommandKeys } from "$lib/commands/commandRuntime";
   import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";

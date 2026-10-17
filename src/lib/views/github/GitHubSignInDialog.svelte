@@ -1,8 +1,8 @@
 <!-- Asked before a GitHub item that needs an account; continues with that item once signed in. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import type { GitHubAccount } from "$lib/types";
   import { closeGitHubDialog } from "./githubDialogs";
   import GitHubSignInForm from "./GitHubSignInForm.svelte";

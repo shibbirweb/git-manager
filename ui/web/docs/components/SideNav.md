@@ -3,7 +3,7 @@
 A vertical list of sections with the open one marked, like the Settings sections.
 
 ```ts
-import SideNav from "@git-manager/ui/components/SideNav.svelte";
+import SideNav from "@nibtree/ui/components/SideNav.svelte";
 ```
 
 Group: Navigation. Also known as: Sidebar navigation.

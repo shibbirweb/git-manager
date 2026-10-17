@@ -1,8 +1,8 @@
 <!-- The status bar bell: unread errors and warnings on the badge; it shows or hides the Notifications panel in the
      right sidebar, the same as the bell in the right activity bar. -->
 <script lang="ts">
-  import Badge from "@git-manager/ui/components/Badge.svelte";
-  import StatusItem from "@git-manager/ui/components/StatusItem.svelte";
+  import Badge from "@nibtree/ui/components/Badge.svelte";
+  import StatusItem from "@nibtree/ui/components/StatusItem.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { bellTitle, hasUnreadError } from "./notificationModel";
   import { notifications } from "./notifications.svelte";

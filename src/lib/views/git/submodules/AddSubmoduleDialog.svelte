@@ -1,13 +1,13 @@
 <!-- Add Submodule: the repository URL, the path inside this repository (from the URL until
      edited) and an optional branch to follow. Runs `git submodule add`. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Spinner from "@git-manager/ui/components/Spinner.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Spinner from "@nibtree/ui/components/Spinner.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { onMount } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";

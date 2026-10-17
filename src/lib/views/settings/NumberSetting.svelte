@@ -1,6 +1,6 @@
 <!-- A number field for a setting: what is typed stays a draft until Enter or leaving the field applies it. -->
 <script lang="ts">
-  import Input from "@git-manager/ui/components/Input.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
 
   interface Props {
     value: number;

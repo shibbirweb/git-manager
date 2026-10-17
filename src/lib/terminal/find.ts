@@ -2,7 +2,7 @@
 // match counter, the highlight colors and the keys of the find bar. Kept free
 // of Svelte and xterm so it can be tested directly.
 
-import { composite, mix, toHex, withAlpha } from "@git-manager/ui/logic/color";
+import { composite, mix, toHex, withAlpha } from "@nibtree/ui/logic/color";
 
 export interface TerminalFindOptions {
   matchCase: boolean;

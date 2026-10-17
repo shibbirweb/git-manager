@@ -533,7 +533,7 @@ fn ureq_transport_reaches_https_without_panicking() {
             let _ = stream.write_all(b"HTTP/1.1 400 Bad Request\r\n\r\n");
         }
     });
-    let transport = UreqTransport::new("git-manager-test");
+    let transport = UreqTransport::new("nibtree-test");
     let request = HttpRequest {
         method: Method::Get,
         url: format!("https://127.0.0.1:{port}/"),

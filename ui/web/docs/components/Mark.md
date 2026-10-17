@@ -3,7 +3,7 @@
 A tiny box with one to three letters that names a tool, such as an AI agent.
 
 ```ts
-import Mark from "@git-manager/ui/components/Mark.svelte";
+import Mark from "@nibtree/ui/components/Mark.svelte";
 ```
 
 Group: Feedback. Also known as: Agent mark, Monogram.

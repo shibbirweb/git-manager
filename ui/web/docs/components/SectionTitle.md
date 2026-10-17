@@ -3,7 +3,7 @@
 A small heading over a group of rows, with a count and buttons at its end.
 
 ```ts
-import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
+import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
 ```
 
 Group: Layout. Also known as: Heading, List header, Group header.

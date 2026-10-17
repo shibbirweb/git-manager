@@ -1,11 +1,11 @@
 <!-- One row of the Branches and Stashes panel, on the UI library's Row: a section or folder with its count, a branch
      with its sync counts, a tag, a stash with Apply, Pop and Drop, or a worktree. -->
 <script lang="ts">
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { applyStash, dropStash, newBranchFrom } from "./actions";
   import { openNewWorktreeDialog } from "../git/worktrees/worktreeActions";

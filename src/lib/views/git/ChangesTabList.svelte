@@ -5,12 +5,12 @@
   import { ignoreMenu } from "$lib/ignore/ignoreActions";
   import { openShelveDialog } from "$lib/shelf/shelfActions.svelte";
   import type { FileStatus, RepoInfo } from "$lib/types";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import FileRow from "@git-manager/ui/components/FileRow.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import ListRegion from "@git-manager/ui/components/ListRegion.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import type { IconName } from "@git-manager/ui/icons";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import FileRow from "@nibtree/ui/components/FileRow.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import ListRegion from "@nibtree/ui/components/ListRegion.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import type { IconName } from "@nibtree/ui/icons";
   import { fileIcons } from "$lib/fileIcons/fileIcons.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import CommitBox from "../changes/CommitBox.svelte";

@@ -6,10 +6,10 @@
   import { joinPath } from "$lib/stores/workspacePaths";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Spacer from "@git-manager/ui/components/Spacer.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Spacer from "@nibtree/ui/components/Spacer.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import { HEAD_REVISION, INDEX_REVISION } from "$lib/views/files/previewSource";
   import { buildSections, displayPath, findFile, findSection, splitSections } from "./sections";
   import { changesSelection } from "./selection.svelte";

@@ -3,7 +3,7 @@
 A bordered list to pick one option from, in groups, like Settings' color themes.
 
 ```ts
-import OptionList from "@git-manager/ui/components/OptionList.svelte";
+import OptionList from "@nibtree/ui/components/OptionList.svelte";
 ```
 
 Group: Forms. Also known as: Listbox, Theme list.

@@ -3,7 +3,7 @@
 Plain monospace text without an editor: command output, a command to run, or error details.
 
 ```ts
-import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
+import CodeBlock from "@nibtree/ui/components/CodeBlock.svelte";
 ```
 
 Group: Editor. Also known as: Pre, Output.

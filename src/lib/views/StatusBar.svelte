@@ -1,8 +1,8 @@
 <!-- Bottom status bar: repository state on the left, the editor's caret, jobs and app memory on the right. -->
 <script lang="ts">
-  import Spinner from "@git-manager/ui/components/Spinner.svelte";
-  import LibraryStatusBar from "@git-manager/ui/components/StatusBar.svelte";
-  import StatusItem from "@git-manager/ui/components/StatusItem.svelte";
+  import Spinner from "@nibtree/ui/components/Spinner.svelte";
+  import LibraryStatusBar from "@nibtree/ui/components/StatusBar.svelte";
+  import StatusItem from "@nibtree/ui/components/StatusItem.svelte";
   import AiUsage from "$lib/ai/AiUsage.svelte";
   import KeepAwake from "$lib/ai/KeepAwake.svelte";
   import NotificationBell from "$lib/notifications/NotificationBell.svelte";

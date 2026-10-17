@@ -1,6 +1,6 @@
 <!-- Release notes rendered from Markdown; links open in the browser. -->
 <script lang="ts">
-  import MarkdownView from "@git-manager/ui/components/MarkdownView.svelte";
+  import MarkdownView from "@nibtree/ui/components/MarkdownView.svelte";
   import { renderMarkdown } from "./markdown";
   import { updates } from "./updates.svelte";
 

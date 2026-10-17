@@ -1,9 +1,9 @@
 <script lang="ts">
   // The repository row actions: branch, Sync, Commit, Refresh and "...".
   import { repoStore } from "$lib/stores/repo.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { commitDraft } from "./commitDraft.svelte";
   import { branchDecorations, branchTooltip, commitButtonTooltip, commitPlan } from "./repoMenu";

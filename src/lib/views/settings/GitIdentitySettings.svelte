@@ -8,12 +8,12 @@
   import type { Identity, IdentityScope } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { toast } from "$lib/ui/toast.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Select from "@git-manager/ui/components/Select.svelte";
-  import Spacer from "@git-manager/ui/components/Spacer.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Select from "@nibtree/ui/components/Select.svelte";
+  import Spacer from "@nibtree/ui/components/Spacer.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { identityLabel, validateIdentityEmail, validateIdentityName } from "../changes/identity";
 
   let globalIdentity = $state<Identity | null>(null);

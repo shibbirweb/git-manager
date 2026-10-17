@@ -3,7 +3,7 @@
 The connector in front of a grouped row, like split terminals in the terminal list.
 
 ```ts
-import TreeLine from "@git-manager/ui/components/TreeLine.svelte";
+import TreeLine from "@nibtree/ui/components/TreeLine.svelte";
 ```
 
 Group: Layout. Also known as: Connector, Tree guide.

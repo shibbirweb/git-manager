@@ -7,7 +7,7 @@
 // the system hands the page directly (dialogs, drops).
 
 import type { RepoInfo } from "$lib/types";
-import { joinPath, onWindows, rootOf } from "@git-manager/ui/logic/paths";
+import { joinPath, onWindows, rootOf } from "@nibtree/ui/logic/paths";
 
 export {
   baseName,
@@ -17,7 +17,7 @@ export {
   normalizePath,
   parentOf,
   rootOf,
-} from "@git-manager/ui/logic/paths";
+} from "@nibtree/ui/logic/paths";
 
 /** Windows ignores letter case in paths; Unix file systems may not, so they compare exactly. */
 function foldCase(path: string, windows: boolean): string {

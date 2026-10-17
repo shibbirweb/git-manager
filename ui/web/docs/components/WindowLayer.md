@@ -3,7 +3,7 @@
 A modal page over the whole window, with no dimming or frame; its content fills it as a column.
 
 ```ts
-import WindowLayer from "@git-manager/ui/components/WindowLayer.svelte";
+import WindowLayer from "@nibtree/ui/components/WindowLayer.svelte";
 ```
 
 Group: Overlays. Also known as: Full-screen overlay, Modal page.

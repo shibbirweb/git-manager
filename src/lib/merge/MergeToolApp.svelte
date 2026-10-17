@@ -5,15 +5,15 @@
   import { api, errorMessage } from "$lib/api";
   import { settings } from "$lib/stores/settings.svelte";
   import { windowChrome } from "$lib/stores/windowChrome.svelte";
-  import AppHeader from "@git-manager/ui/components/AppHeader.svelte";
+  import AppHeader from "@nibtree/ui/components/AppHeader.svelte";
   import type { MergeDocument } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import CodeBlock from "@nibtree/ui/components/CodeBlock.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import MergeEditor from "./MergeEditor.svelte";
 

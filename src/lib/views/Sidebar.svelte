@@ -1,11 +1,11 @@
 <!-- The Branches and Stashes panel: local and remote branches, tags, stashes and worktrees as one tree with a
      filter. Double-click or Enter checks out; the right-click menus hold everything else. -->
 <script lang="ts">
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import SearchField from "@git-manager/ui/components/SearchField.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import List from "@nibtree/ui/components/List.svelte";
+  import SearchField from "@nibtree/ui/components/SearchField.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";

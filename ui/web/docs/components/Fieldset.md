@@ -3,7 +3,7 @@
 A group of options under a legend, like Pull's choices of how to integrate changes.
 
 ```ts
-import Fieldset from "@git-manager/ui/components/Fieldset.svelte";
+import Fieldset from "@nibtree/ui/components/Fieldset.svelte";
 ```
 
 Group: Forms.

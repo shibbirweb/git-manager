@@ -2,10 +2,10 @@
      (pull, push, fetch, errors...), newest first, with any link that still works. Each one closes on its own x, Clear
      All empties the list, and the bell toggles Do Not Disturb. While it is shown, nothing pops up as a toast. -->
 <script lang="ts">
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Notification from "@git-manager/ui/components/Notification.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Notification from "@nibtree/ui/components/Notification.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { settings } from "$lib/stores/settings.svelte";
   import { toast } from "$lib/ui/toast.svelte";

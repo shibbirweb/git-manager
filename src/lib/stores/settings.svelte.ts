@@ -17,7 +17,7 @@ import { api, errorMessage, onConfigChanged } from "$lib/api";
 import { pushRecentCommand } from "$lib/commands/recentCommands";
 import type { ShortcutOverrides } from "$lib/commands/registry";
 import { applyColorTheme } from "$lib/themes/apply";
-import { type ColorMode, effectiveMode, pickThemeId } from "@git-manager/ui/themes/themeIndex";
+import { type ColorMode, effectiveMode, pickThemeId } from "@nibtree/ui/themes/themeIndex";
 import { toast } from "$lib/ui/toast.svelte";
 import { type RecentFile, withRecentFiles } from "./recentFiles";
 import { type SavedTabSession, withTabSession } from "./tabSession";

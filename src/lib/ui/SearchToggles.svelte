@@ -1,7 +1,7 @@
 <!-- Match Case, Words and Regex toggles shown inside a search field (editor find bar, Find in Files), on the UI
      library's SearchToggles; callers toggle one option at a time. -->
 <script lang="ts">
-  import LibrarySearchToggles from "@git-manager/ui/components/SearchToggles.svelte";
+  import LibrarySearchToggles from "@nibtree/ui/components/SearchToggles.svelte";
   import { localKeys } from "$lib/commands/commandRuntime";
 
   interface ToggleOptions {

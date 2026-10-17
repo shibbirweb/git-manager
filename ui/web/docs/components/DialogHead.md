@@ -3,7 +3,7 @@
 A dialog's head with more than a title: an icon on a tinted tile, a subtitle and a close button.
 
 ```ts
-import DialogHead from "@git-manager/ui/components/DialogHead.svelte";
+import DialogHead from "@nibtree/ui/components/DialogHead.svelte";
 ```
 
 Group: Overlays. Also known as: Dialog header.

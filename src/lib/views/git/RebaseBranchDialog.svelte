@@ -2,15 +2,15 @@
      (opens the Interactive Rebase dialog), --rebase-merges, --keep-empty, --root,
      --update-refs and --onto with an upstream for the three-argument form. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
-  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Select from "@git-manager/ui/components/Select.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
+  import CodeBlock from "@nibtree/ui/components/CodeBlock.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Select from "@nibtree/ui/components/Select.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { onMount, untrack } from "svelte";
   import { localKeys } from "$lib/commands/commandRuntime";
   import { api, errorMessage } from "$lib/api";

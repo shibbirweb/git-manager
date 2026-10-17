@@ -1,15 +1,15 @@
 <!-- The Merge dialog: "Merge into BRANCH", the branch to merge, the merge options,
      the commit message when a merge commit can be made, and the command it runs. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
-  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import TextArea from "@git-manager/ui/components/TextArea.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
+  import CodeBlock from "@nibtree/ui/components/CodeBlock.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import TextArea from "@nibtree/ui/components/TextArea.svelte";
   import { onMount, untrack } from "svelte";
   import { localKeys } from "$lib/commands/commandRuntime";
   import { api } from "$lib/api";

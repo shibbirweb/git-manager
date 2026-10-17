@@ -1,13 +1,13 @@
 <!-- Clone: the repository URL, the parent folder and the new folder's name (from the URL
      until edited). Streams git's progress; when done, opens the clone or adds it to the workspace. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Spinner from "@git-manager/ui/components/Spinner.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Spinner from "@nibtree/ui/components/Spinner.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { Channel } from "@tauri-apps/api/core";
   import { homeDir } from "@tauri-apps/api/path";
   import { open } from "@tauri-apps/plugin-dialog";

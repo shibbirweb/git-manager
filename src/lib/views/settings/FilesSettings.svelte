@@ -1,11 +1,11 @@
 <!-- Settings > Settings Files: where the settings live, and which settings differ from the defaults. -->
 <script lang="ts">
   import { settings } from "$lib/stores/settings.svelte";
-  import BulletList from "@git-manager/ui/components/BulletList.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import BulletList from "@nibtree/ui/components/BulletList.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import CodeBlock from "@nibtree/ui/components/CodeBlock.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import SettingsRow from "./SettingsRow.svelte";
   import { copyToClipboard } from "./settingsShared";
 

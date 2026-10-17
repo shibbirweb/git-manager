@@ -6,8 +6,8 @@
   The UI library's CommandPalette draws it; quickOpenSearch.svelte.ts asks the backend.
 -->
 <script lang="ts">
-  import CommandPalette from "@git-manager/ui/components/CommandPalette.svelte";
-  import type { PaletteItem as Item } from "@git-manager/ui/logic/palette";
+  import CommandPalette from "@nibtree/ui/components/CommandPalette.svelte";
+  import type { PaletteItem as Item } from "@nibtree/ui/logic/palette";
   import { EditorView } from "@codemirror/view";
   import { onMount, untrack } from "svelte";
   import { currentCommandViews, currentPlatform, runCommand, shortcutFor } from "$lib/commands/commandRuntime";

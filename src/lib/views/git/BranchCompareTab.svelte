@@ -2,16 +2,16 @@
      lacks and the other way round, and the files that differ, each with its diff (the current
      branch on the left). A commit opens in its own tab. Reloads when refs change. -->
 <script lang="ts">
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import Spinner from "@git-manager/ui/components/Spinner.svelte";
-  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import Spinner from "@nibtree/ui/components/Spinner.svelte";
+  import SplitPane from "@nibtree/ui/components/SplitPane.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { untrack } from "svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
   import { api, errorMessage } from "$lib/api";

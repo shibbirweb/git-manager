@@ -3,7 +3,7 @@
 A count in a small pill, like the changes count on the activity bar; "99+" above `max`.
 
 ```ts
-import Badge from "@git-manager/ui/components/Badge.svelte";
+import Badge from "@nibtree/ui/components/Badge.svelte";
 ```
 
 Group: Feedback. Also known as: Badge, Counter.

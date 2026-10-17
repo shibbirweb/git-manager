@@ -2,18 +2,18 @@
      branch, with an agent in it. More agents race on the same task, each in its own worktree. The worktree logic is in
      taskModel.ts and aiTasks.ts. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Select from "@git-manager/ui/components/Select.svelte";
-  import Spinner from "@git-manager/ui/components/Spinner.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import TextArea from "@git-manager/ui/components/TextArea.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Select from "@nibtree/ui/components/Select.svelte";
+  import Spinner from "@nibtree/ui/components/Spinner.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import TextArea from "@nibtree/ui/components/TextArea.svelte";
   import { onMount, untrack } from "svelte";
   import { api } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";

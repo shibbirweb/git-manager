@@ -1,14 +1,14 @@
 <!-- Git Remotes: each remote with its fetch and push URLs; add, edit (name and
      URLs) and remove, with the names checked like git does. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import ListBox from "@git-manager/ui/components/ListBox.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import ListBox from "@nibtree/ui/components/ListBox.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { onMount } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";

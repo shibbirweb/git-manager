@@ -1,14 +1,14 @@
 <!-- Asked before a commit in a repository where git has no name and email: saves them for
      every repository (git config --global) or only this one, then the commit goes ahead. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Fieldset from "@git-manager/ui/components/Fieldset.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import RadioGroup from "@git-manager/ui/components/RadioGroup.svelte";
-  import Spinner from "@git-manager/ui/components/Spinner.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Fieldset from "@nibtree/ui/components/Fieldset.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import RadioGroup from "@nibtree/ui/components/RadioGroup.svelte";
+  import Spinner from "@nibtree/ui/components/Spinner.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { onDestroy, untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";

@@ -3,7 +3,7 @@
 A native checkbox with its label; clicking the text toggles it too.
 
 ```ts
-import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
+import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
 ```
 
 Group: Forms. Also known as: Checkbox.

@@ -5,8 +5,8 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { type LeftPanel, settings } from "$lib/stores/settings.svelte";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
-  import ActivityBar from "@git-manager/ui/components/ActivityBar.svelte";
-  import type { IconName } from "@git-manager/ui/icons";
+  import ActivityBar from "@nibtree/ui/components/ActivityBar.svelte";
+  import type { IconName } from "@nibtree/ui/icons";
   import { changesSelection } from "./changes/selection.svelte";
 
   interface Item {

@@ -4,8 +4,8 @@
 import type { MergeView } from "@codemirror/merge";
 import type { Extension } from "@codemirror/state";
 import { EditorView, keymap, panels } from "@codemirror/view";
-import type { DiffFrameParts } from "@git-manager/ui/components/DiffFrame.svelte";
-import type { ConnectorRibbon } from "@git-manager/ui/components/MergeConnector.svelte";
+import type { DiffFrameParts } from "@nibtree/ui/components/DiffFrame.svelte";
+import type { ConnectorRibbon } from "@nibtree/ui/components/MergeConnector.svelte";
 import { type BlameTarget, blameExtension, loadBlame } from "$lib/editor/blame";
 import { createStrip, jumpToLine, layoutTicks, renderTicks } from "$lib/editor/scrollMarkers";
 import { baseExtensions, editorLanguage } from "$lib/editor/setup";

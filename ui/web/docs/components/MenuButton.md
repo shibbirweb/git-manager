@@ -3,7 +3,7 @@
 A button that opens a Menu under itself, like a "..." button.
 
 ```ts
-import MenuButton from "@git-manager/ui/components/MenuButton.svelte";
+import MenuButton from "@nibtree/ui/components/MenuButton.svelte";
 ```
 
 Group: Overlays. Also known as: Dropdown menu.

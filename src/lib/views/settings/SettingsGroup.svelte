@@ -1,8 +1,8 @@
 <!-- A titled group of settings rows; a search keeps it while its title or one of its rows matches. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { provideSettingsGroup, useSettingsSearch } from "./settingsSearchView.svelte";
 
   interface Props {

@@ -3,9 +3,9 @@
   import { helpDialogs } from "$lib/help/helpDialogs.svelte";
   import { WIKI_URL } from "$lib/update/releases";
   import { updates } from "$lib/update/updates.svelte";
-  import ResourceLink from "@git-manager/ui/components/ResourceLink.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import ResourceLink from "@nibtree/ui/components/ResourceLink.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
 </script>
 
 <Stack gap="xl" paddingX="xxl" paddingY="xxl" maxWidth="page">

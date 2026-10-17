@@ -9,10 +9,10 @@
   import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { FileCompare } from "$lib/types";
-  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Notice from "@git-manager/ui/components/Notice.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import ElementHost from "@nibtree/ui/components/ElementHost.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Notice from "@nibtree/ui/components/Notice.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import { compareStore, type SideInput } from "./compareStore.svelte";
   import { type CompareSideRef, parseCompareTabPath, sideLabels } from "./compareTabs";
 

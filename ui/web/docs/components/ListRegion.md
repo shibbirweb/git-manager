@@ -3,7 +3,7 @@
 A focusable listbox the app fills with grouped content and drives with its own keys.
 
 ```ts
-import ListRegion from "@git-manager/ui/components/ListRegion.svelte";
+import ListRegion from "@nibtree/ui/components/ListRegion.svelte";
 ```
 
 Group: Navigation. Also known as: Listbox, Grouped list, Active descendant.

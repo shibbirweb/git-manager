@@ -4,12 +4,12 @@
   import { untrack } from "svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import TextArea from "@git-manager/ui/components/TextArea.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import TextArea from "@nibtree/ui/components/TextArea.svelte";
   import {
     type CommitTemplate,
     MAX_COMMIT_TEMPLATES,

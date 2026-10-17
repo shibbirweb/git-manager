@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { needsCatalog, themeAttributes } from "./apply";
-import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME } from "@git-manager/ui/themes/themeIndex";
+import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME } from "@nibtree/ui/themes/themeIndex";
 
 describe("themeAttributes", () => {
   it("names the mode, the theme and high contrast", () => {

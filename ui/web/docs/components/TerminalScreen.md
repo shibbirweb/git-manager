@@ -3,7 +3,7 @@
 The frame of a terminal: the element an xterm view opens in, its states, bell flash and drop outline.
 
 ```ts
-import TerminalScreen from "@git-manager/ui/components/TerminalScreen.svelte";
+import TerminalScreen from "@nibtree/ui/components/TerminalScreen.svelte";
 ```
 
 Group: Editor. Also known as: Terminal frame, xterm host.

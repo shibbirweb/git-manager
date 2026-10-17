@@ -8,7 +8,7 @@ import { Decoration, type DecorationSet, EditorView, GutterMarker, gutter } from
 import { inlineFolds } from "./foldField";
 import { FOLD_MARGIN, FOLD_MIN_SIZE } from "./foldModel";
 import { collapsedRuns, type InlineBlock, type InlineDoc, inlineWordMarks, lineSign } from "./inlineDoc";
-import type { IconName } from "@git-manager/ui/icons";
+import type { IconName } from "@nibtree/ui/icons";
 import { inlineTheme } from "./inlineTheme";
 import { revertButton } from "./mergeExtensions";
 

@@ -3,7 +3,7 @@
 A modal dialog over a dimmed window: a title, the content and the actions on the right.
 
 ```ts
-import Dialog from "@git-manager/ui/components/Dialog.svelte";
+import Dialog from "@nibtree/ui/components/Dialog.svelte";
 ```
 
 Group: Overlays. Also known as: Dialog, Modal.

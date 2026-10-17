@@ -3,7 +3,7 @@
 A stroke icon on a 24px grid in the current text color. The preview lists every icon name.
 
 ```ts
-import Icon from "@git-manager/ui/components/Icon.svelte";
+import Icon from "@nibtree/ui/components/Icon.svelte";
 ```
 
 Group: Actions.

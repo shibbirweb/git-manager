@@ -3,16 +3,16 @@
   Double click (or Enter) on a file shows its diff; the right-click menus unshelve, rename and delete.
 -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import StatusLetter from "@git-manager/ui/components/StatusLetter.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import List from "@nibtree/ui/components/List.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import StatusLetter from "@nibtree/ui/components/StatusLetter.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { ShelfEntry, ShelvedFile } from "$lib/types";

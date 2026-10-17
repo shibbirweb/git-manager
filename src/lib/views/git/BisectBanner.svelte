@@ -2,10 +2,10 @@
      checked out commit and, once git names it, the first bad commit. -->
 <script lang="ts">
   import { repoStore } from "$lib/stores/repo.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Notice from "@git-manager/ui/components/Notice.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Notice from "@nibtree/ui/components/Notice.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { bisectStore } from "./bisect.svelte";
   import { markBisect, resetBisect, showFirstBad } from "./bisectActions";
   import { bisectBannerText } from "./bisectBanner";

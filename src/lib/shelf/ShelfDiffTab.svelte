@@ -5,9 +5,9 @@
   import { joinPath } from "$lib/stores/workspacePaths";
   import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import type { ShelfFileDiff } from "$lib/types";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Notice from "@git-manager/ui/components/Notice.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Notice from "@nibtree/ui/components/Notice.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import { shelfState } from "./shelfActions.svelte";
   import { shelvedFileLabel } from "./shelfModel";
 

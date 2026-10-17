@@ -3,10 +3,10 @@
   Cmd+K asks for a link, and images and links resolve inside the workspace.
 -->
 <script lang="ts">
-  import MarkdownEditor from "@git-manager/ui/components/MarkdownEditor.svelte";
-  import type { LinkTarget } from "@git-manager/ui/markdown/links";
-  import type { RichAction } from "@git-manager/ui/markdown/richEditor";
-  import type { SourceEdit } from "@git-manager/ui/markdown/richSync";
+  import MarkdownEditor from "@nibtree/ui/components/MarkdownEditor.svelte";
+  import type { LinkTarget } from "@nibtree/ui/markdown/links";
+  import type { RichAction } from "@nibtree/ui/markdown/richEditor";
+  import type { SourceEdit } from "@nibtree/ui/markdown/richSync";
   import { openUrl } from "@tauri-apps/plugin-opener";
   import { errorMessage } from "$lib/api";
   import { documentLinkContext, isDarkPage, workspaceImageUrl } from "$lib/markdown/markdownContext";

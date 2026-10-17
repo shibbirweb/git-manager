@@ -3,7 +3,7 @@
 A changed file in a list: status letter, type icon, name, dim folder, tag and hover actions.
 
 ```ts
-import FileRow from "@git-manager/ui/components/FileRow.svelte";
+import FileRow from "@nibtree/ui/components/FileRow.svelte";
 ```
 
 Group: Navigation.

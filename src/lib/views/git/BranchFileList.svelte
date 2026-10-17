@@ -1,11 +1,11 @@
 <!-- The changed files of a branch comparison: status letter, name and folder; Up and Down
      move the selection. -->
 <script lang="ts">
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import StatusLetter from "@git-manager/ui/components/StatusLetter.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import List from "@nibtree/ui/components/List.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import StatusLetter from "@nibtree/ui/components/StatusLetter.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { fileDir, fileName } from "$lib/log/format";
   import type { ChangedFile } from "$lib/types";
 

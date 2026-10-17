@@ -1,10 +1,10 @@
 <!-- A file's diff: the toolbar (DiffToolbar), and the two sides side by side or inline in the library's DiffFrame,
      whose editors diffEditors.svelte.ts builds. Binary files show a preview, Git LFS files their sizes. -->
 <script lang="ts">
-  import DiffFrame from "@git-manager/ui/components/DiffFrame.svelte";
-  import type { DiffFrameParts } from "@git-manager/ui/components/DiffFrame.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import DiffFrame from "@nibtree/ui/components/DiffFrame.svelte";
+  import type { DiffFrameParts } from "@nibtree/ui/components/DiffFrame.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import { untrack } from "svelte";
   import { type BlameTarget, setBlameDisplay } from "$lib/editor/blame";
   import { settings } from "$lib/stores/settings.svelte";

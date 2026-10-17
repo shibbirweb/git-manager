@@ -3,7 +3,7 @@
 A long list that draws only the rows in view, for thousands of rows of one fixed height.
 
 ```ts
-import VirtualList from "@git-manager/ui/components/VirtualList.svelte";
+import VirtualList from "@nibtree/ui/components/VirtualList.svelte";
 ```
 
 Group: Navigation. Also known as: Virtual list, Scroll area.

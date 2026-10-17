@@ -1,10 +1,10 @@
 <!-- One row of the Text tab: a file heading its matches, or a matching line. -->
 <script lang="ts">
-  import HighlightText from "@git-manager/ui/components/HighlightText.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import { partsToRanges } from "@git-manager/ui/logic/highlight";
+  import HighlightText from "@nibtree/ui/components/HighlightText.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import { partsToRanges } from "@nibtree/ui/logic/highlight";
   import type { TextRow } from "./textSearchModel";
 
   let { row }: { row: TextRow } = $props();

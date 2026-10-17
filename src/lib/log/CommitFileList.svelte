@@ -2,13 +2,13 @@
 <script lang="ts">
   import FileTypeIcon from "$lib/fileIcons/FileTypeIcon.svelte";
   import type { CommitDetails } from "$lib/types";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Link from "@git-manager/ui/components/Link.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import StatusLetter from "@git-manager/ui/components/StatusLetter.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Link from "@nibtree/ui/components/Link.svelte";
+  import List from "@nibtree/ui/components/List.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import StatusLetter from "@nibtree/ui/components/StatusLetter.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { type CommitFileRow, filesCaption, isMerge, type MergeView } from "./commitFiles";
   import { fileDir, fileName } from "./format";
 

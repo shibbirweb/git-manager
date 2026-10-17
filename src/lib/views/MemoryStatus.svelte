@@ -1,11 +1,11 @@
 <!-- The status bar's memory item: the whole app's memory, polled while the window shows, with a details popover
      (each process, the terminals, GPU acceleration) and, on macOS, Clear Cache beside it. -->
 <script lang="ts">
-  import Meter from "@git-manager/ui/components/Meter.svelte";
-  import Popover from "@git-manager/ui/components/Popover.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import StatusItem from "@git-manager/ui/components/StatusItem.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Meter from "@nibtree/ui/components/Meter.svelte";
+  import Popover from "@nibtree/ui/components/Popover.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import StatusItem from "@nibtree/ui/components/StatusItem.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { onMount, untrack } from "svelte";
   import { api } from "$lib/api";
   import { clearCache } from "$lib/debug/clearCache";

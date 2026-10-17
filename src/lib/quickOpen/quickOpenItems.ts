@@ -1,7 +1,7 @@
 // Quick Open's rows as the UI library's CommandPalette takes them: a heading row becomes the section of the rows
 // under it, and a lone message (no results, still indexing, a line out of range) becomes the empty text.
-import { partsToRanges } from "@git-manager/ui/logic/highlight";
-import type { PaletteItem } from "@git-manager/ui/logic/palette";
+import { partsToRanges } from "@nibtree/ui/logic/highlight";
+import type { PaletteItem } from "@nibtree/ui/logic/palette";
 import type { QuickRow } from "./quickOpenModel";
 
 export interface QuickOpenItems {

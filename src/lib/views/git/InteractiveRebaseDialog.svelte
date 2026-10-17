@@ -3,15 +3,15 @@
      reword and squash messages edited in place, and Reset to start over. With merge commits
      the rows follow the --rebase-merges todo, grouped by branch (see rebaseModel.ts). -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import ReorderList from "@git-manager/ui/components/ReorderList.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import Select from "@git-manager/ui/components/Select.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Tag from "@git-manager/ui/components/Tag.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import TextArea from "@git-manager/ui/components/TextArea.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import ReorderList from "@nibtree/ui/components/ReorderList.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import Select from "@nibtree/ui/components/Select.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Tag from "@nibtree/ui/components/Tag.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import TextArea from "@nibtree/ui/components/TextArea.svelte";
   import { untrack } from "svelte";
   import { localKeys } from "$lib/commands/commandRuntime";
   import { relativeTime } from "$lib/log/format";

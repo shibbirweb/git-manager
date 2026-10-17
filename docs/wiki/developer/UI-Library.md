@@ -22,7 +22,7 @@ flowchart LR
   C --> S
 ```
 
-- **Tokens.** `colors.json` holds the built-in Light and Dark colors (written to `styles/colors.css`). `typography.json` holds the font families, sizes, weights, line heights, letter spacing and named text styles (body, label, hint, caption, sectionLabel, title, heading, code...). `tokens.json` holds size, radius, space, motion, the breakpoints (panel and window widths) and the grid. `components.json` and `components-2.json` hold each component's measurements, such as `"button": {"height": "{size.control}"}`. `editor.json` holds the code editor's sizes (CSS variables, or `@git-manager/ui/tokens` in script). `themes/` holds the color themes. A string in braces refers to another token.
+- **Tokens.** `colors.json` holds the built-in Light and Dark colors (written to `styles/colors.css`). `typography.json` holds the font families, sizes, weights, line heights, letter spacing and named text styles (body, label, hint, caption, sectionLabel, title, heading, code...). `tokens.json` holds size, radius, space, motion, the breakpoints (panel and window widths) and the grid. `components.json` and `components-2.json` hold each component's measurements, such as `"button": {"height": "{size.control}"}`. `editor.json` holds the code editor's sizes (CSS variables, or `@nibtree/ui/tokens` in script). `themes/` holds the color themes. A string in braces refers to another token.
 - **Generators.** `design-tokens/build/` turns the files into CSS variables (`--button-height`), a TypeScript object for code that measures in script, Swift (`GMColor.bg`, `GMButtonTokens.height`), XAML resource dictionaries and GTK 4 CSS. Swift output type-checks with `swiftc`.
 - **Components.** `ui/web/src/lib/components/` has one component per file. Each takes sizes from tokens and colors from the theme, and no `class` or `style`: tone, size and layout are props. `Stack` lays things out with spacing steps and `Text` writes words in a tone and size, so screens need no CSS of their own. A list is a `List` (keys, selection, a filter field that drives it) of `Row`s; `Spacer` pushes the rest of a row to its end. A `responsive` Toolbar hides less needed words when narrow.
 - **Named sizes.** Design props are never free numbers or text. Sizes, widths, heights and spacing are named presets from `tokens.json` (`logic/presets.ts`), so every platform has the same few choices. Numbers are only for data, such as a count or a size the user dragged.
@@ -54,7 +54,7 @@ flowchart LR
 - `web/src/lib/styles/markdown.test.ts`: the Markdown styles stay equal to the app's preview.
 - `bun run check` type-checks `ui/web` with its own tsconfig.
 
-The app imports the library as the local package `@git-manager/ui`; how it moves onto it is in [UI-Library-Migration.md](UI-Library-Migration.md).
+The app imports the library as the local package `@nibtree/ui`; how it moves onto it is in [UI-Library-Migration.md](UI-Library-Migration.md).
 
 ## Parity with the app
 

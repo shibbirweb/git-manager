@@ -1686,8 +1686,8 @@ fn files_exist_reports_only_files_inside_the_workspace() {
 #[ignore = "moves a file to the user's real Trash"]
 fn file_trash_moves_entries_to_the_system_trash() {
     let dir = TestDir::new();
-    let name = format!("git-manager-trash-test-{}.txt", std::process::id());
-    let link = format!("git-manager-trash-link-{}", std::process::id());
+    let name = format!("nibtree-trash-test-{}.txt", std::process::id());
+    let link = format!("nibtree-trash-link-{}", std::process::id());
     dir.write(&name, "trash me");
     std::os::unix::fs::symlink(&name, dir.file(&link)).unwrap();
     let roots = vec![dir.path_string()];

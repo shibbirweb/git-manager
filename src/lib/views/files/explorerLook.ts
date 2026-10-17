@@ -1,7 +1,7 @@
 // How a Files panel row looks: its git tone and status letter (a dot on a folder holding changes), struck through
 // when deleted, faded while cut, faint when ignored, the LFS tag, the full path as its tooltip, and a quiet
 // highlight while it is the file in the editor.
-import type { TreeDecoration } from "@git-manager/ui/logic/treeModel";
+import type { TreeDecoration } from "@nibtree/ui/logic/treeModel";
 import { joinPath } from "$lib/stores/workspacePaths";
 import type { RepoStatus } from "$lib/types";
 import type { TreeEntry } from "./folderListings";

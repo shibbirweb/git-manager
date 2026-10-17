@@ -1,14 +1,14 @@
 <!-- The terminal panel's list of terminals, shown when there are several: split groups are joined by tree lines,
      the shown group reads in the text color, a double-click renames and the trash kills. -->
 <script lang="ts">
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import RenameField from "@git-manager/ui/components/RenameField.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import StatusDot from "@git-manager/ui/components/StatusDot.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import TreeLine from "@git-manager/ui/components/TreeLine.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import List from "@nibtree/ui/components/List.svelte";
+  import RenameField from "@nibtree/ui/components/RenameField.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import StatusDot from "@nibtree/ui/components/StatusDot.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import TreeLine from "@nibtree/ui/components/TreeLine.svelte";
   import { groupRowPosition, type GroupRowPosition } from "./splitPanes";
   import { type TerminalEntry, terminalStore } from "./terminalStore.svelte";
   import { folderLabel } from "./terminals";

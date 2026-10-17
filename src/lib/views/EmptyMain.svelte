@@ -1,12 +1,12 @@
 <!-- Main area when no diff, file or Log is open: the Navigation Bar on top, then ways to start. -->
 <script lang="ts">
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import Logo from "@git-manager/ui/components/Logo.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
-  import type { IconName } from "@git-manager/ui/icons";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import Logo from "@nibtree/ui/components/Logo.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
+  import type { IconName } from "@nibtree/ui/icons";
   import { commandKeys, currentPlatform } from "$lib/commands/commandRuntime";
   import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";

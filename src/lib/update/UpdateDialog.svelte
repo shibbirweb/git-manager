@@ -1,12 +1,12 @@
 <!-- "A new version is available": notes for every release since this one, and a download link.
      A manual check can also open it for a version the user skipped, marked as such. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Link from "@git-manager/ui/components/Link.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Tag from "@git-manager/ui/components/Tag.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Link from "@nibtree/ui/components/Link.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Tag from "@nibtree/ui/components/Tag.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import ReleaseNotes from "./ReleaseNotes.svelte";
   import { updates } from "./updates.svelte";
 

@@ -3,7 +3,7 @@
 A file's type icon, resolved by the app from the chosen icon set and passed in as `view`.
 
 ```ts
-import FileIcon from "@git-manager/ui/components/FileIcon.svelte";
+import FileIcon from "@nibtree/ui/components/FileIcon.svelte";
 ```
 
 Group: Feedback.

@@ -4,8 +4,8 @@
      opens the real file; with `blame`, Blame shows who wrote each line of one pane. The panes' widths are saved.
      threeWayEditors.svelte.ts builds the editors, and the toolbar is the same DiffToolbar as every other diff. -->
 <script lang="ts">
-  import MergeFrame from "@git-manager/ui/components/MergeFrame.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import MergeFrame from "@nibtree/ui/components/MergeFrame.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import { setBlameDisplay } from "$lib/editor/blame";
   import { type DiffLayout, settings } from "$lib/stores/settings.svelte";
   import type { FileDiff, LineSelection } from "$lib/types";

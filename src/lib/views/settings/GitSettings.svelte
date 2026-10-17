@@ -12,12 +12,12 @@
   } from "$lib/stores/settings.svelte";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import Select from "@git-manager/ui/components/Select.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import Select from "@nibtree/ui/components/Select.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { GPG_SIGN_CHOICES } from "../changes/commitOptions";
   import CommitTemplateSettings from "./CommitTemplateSettings.svelte";
   import GitIdentitySettings from "./GitIdentitySettings.svelte";

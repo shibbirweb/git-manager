@@ -3,7 +3,7 @@
 A single-line text field. `invalid` draws a red border; Field shows the message under it.
 
 ```ts
-import Input from "@git-manager/ui/components/Input.svelte";
+import Input from "@nibtree/ui/components/Input.svelte";
 ```
 
 Group: Forms. Also known as: Input, Text field.

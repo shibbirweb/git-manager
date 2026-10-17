@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "git-manager-ui": {
+    "nibtree-ui": {
       "command": "bun",
       "args": ["ui/mcp/server.ts"]
     }

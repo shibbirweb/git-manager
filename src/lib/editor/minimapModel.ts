@@ -2,7 +2,7 @@
 // or a drag scrolls to, and the colored runs of one line. minimap.ts draws them on a canvas.
 // Everything is in lines (not pixels of the editor), so folds and wrapping only shift it a little.
 
-import { componentTokens } from "@git-manager/ui/tokens";
+import { componentTokens } from "@nibtree/ui/tokens";
 
 /** Pixels of minimap per document line (blocks, not characters). */
 export const MINIMAP_ROW = 2;

@@ -34,7 +34,7 @@ describe("the design-system tools", () => {
 describe("the protocol", () => {
   it("answers initialize, lists tools and calls one", () => {
     const init = handle({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18" } });
-    expect(init).toMatchObject({ id: 1, result: { serverInfo: { name: "git-manager-ui" } } });
+    expect(init).toMatchObject({ id: 1, result: { serverInfo: { name: "nibtree-ui" } } });
     const tools = handle({ jsonrpc: "2.0", id: 2, method: "tools/list" }) as { result: { tools: { name: string }[] } };
     expect(tools.result.tools.map((tool) => tool.name)).toContain("get_component");
     const call = handle({

@@ -1,12 +1,12 @@
 <!-- Keep computer awake in the status bar, like Orca's: a coffee cup, the mode and a dot that fills while the computer
      is held awake. Click for the menu: the title and status, then On, Agent and Off with what each does. -->
 <script lang="ts">
-  import ChoiceMenu from "@git-manager/ui/components/ChoiceMenu.svelte";
-  import Popover from "@git-manager/ui/components/Popover.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import StatusDot from "@git-manager/ui/components/StatusDot.svelte";
-  import StatusItem from "@git-manager/ui/components/StatusItem.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import ChoiceMenu from "@nibtree/ui/components/ChoiceMenu.svelte";
+  import Popover from "@nibtree/ui/components/Popover.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import StatusDot from "@nibtree/ui/components/StatusDot.svelte";
+  import StatusItem from "@nibtree/ui/components/StatusItem.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import type { ComputerAwakeMode } from "$lib/stores/settingsData";
   import { platformName } from "$lib/update/releases";

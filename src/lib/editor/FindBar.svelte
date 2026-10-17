@@ -1,8 +1,8 @@
 <!-- The editor find and replace bar on the UI library's FindBar, mounted as a CodeMirror panel by
      findPanel.svelte.ts, which owns the state, the keys and the actions. -->
 <script lang="ts">
-  import LibraryFindBar from "@git-manager/ui/components/FindBar.svelte";
-  import type { SearchOptions } from "@git-manager/ui/components/SearchToggles.svelte";
+  import LibraryFindBar from "@nibtree/ui/components/FindBar.svelte";
+  import type { SearchOptions } from "@nibtree/ui/components/SearchToggles.svelte";
   import { localKeys, withCommandKeys } from "$lib/commands/commandRuntime";
   import type { FindBarActions, FindBarState, FindField } from "./findPanel.svelte";
 

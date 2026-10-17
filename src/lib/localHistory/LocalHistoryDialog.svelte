@@ -9,17 +9,17 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { baseName, folderFor, parentOf, relativeTo } from "$lib/stores/workspacePaths";
   import type { DeletedLocalFile, FileDiff, FileLocalHistory } from "$lib/types";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import List from "@nibtree/ui/components/List.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import SplitPane from "@nibtree/ui/components/SplitPane.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { localHistory } from "./localHistory.svelte";
   import {
     isSafetyCopy,

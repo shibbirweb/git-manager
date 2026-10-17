@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ZoomBadge from "@git-manager/ui/components/ZoomBadge.svelte";
+  import ZoomBadge from "@nibtree/ui/components/ZoomBadge.svelte";
   import AppOverlays from "./AppOverlays.svelte";
   import { onMount, untrack } from "svelte";
   import { api, currentWindowLabel, errorMessage } from "$lib/api";

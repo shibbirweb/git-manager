@@ -3,7 +3,7 @@
 A side column inside a view or dialog: a set width, its own scroll and a tinted background.
 
 ```ts
-import Pane from "@git-manager/ui/components/Pane.svelte";
+import Pane from "@nibtree/ui/components/Pane.svelte";
 ```
 
 Group: Layout. Also known as: Side column, Sidebar.

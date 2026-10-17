@@ -5,7 +5,7 @@
   tab mode with Single tab title on, a strip holding one tab shows it as a centered name.
 -->
 <script lang="ts">
-  import TabStrip from "@git-manager/ui/components/TabStrip.svelte";
+  import TabStrip from "@nibtree/ui/components/TabStrip.svelte";
   import { startMenu } from "$lib/ai/sessions.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";

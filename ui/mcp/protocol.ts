@@ -92,7 +92,7 @@ export function handle(request: Request): Record<string, unknown> | null {
       return reply({
         protocolVersion: String(params.protocolVersion ?? "2025-06-18"),
         capabilities: { tools: {}, resources: {} },
-        serverInfo: { name: "git-manager-ui", version: "1.0.0" },
+        serverInfo: { name: "nibtree-ui", version: "1.0.0" },
         instructions: "Nibtree's UI library and design system. " + RULES.join(" "),
       });
     case "ping":

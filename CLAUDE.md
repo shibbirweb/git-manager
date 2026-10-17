@@ -40,7 +40,7 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 - **UI library and design system**: `ui/web/` is the Svelte component library (components, tested logic, one
   doc per component, the showcase); `ui/design-tokens/` holds colors, sizes and component measurements that
   generate CSS, Swift (macOS), XAML (Windows) and GTK CSS (Linux) for future native apps. AI agents read
-  `ui/web/COMPONENTS.md` and `ui/web/docs/components/<Name>.md`, or ask the `git-manager-ui` MCP server
+  `ui/web/COMPONENTS.md` and `ui/web/docs/components/<Name>.md`, or ask the `nibtree-ui` MCP server
   (`ui/mcp/`, registered in `.mcp.json`: list, search and get components, tokens, icons and rules). Tests keep
   docs equal to each component's `$props()`, generated files fresh, and the generated `colors.css` equal to the
   theme catalog's built-in themes.

@@ -3,7 +3,7 @@
 A button that looks like a link, for a small action in text or under a list.
 
 ```ts
-import Link from "@git-manager/ui/components/Link.svelte";
+import Link from "@nibtree/ui/components/Link.svelte";
 ```
 
 Group: Actions. Also known as: Link, Text button, Anchor.

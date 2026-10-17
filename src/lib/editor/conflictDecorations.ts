@@ -4,7 +4,7 @@
 
 import { type Extension, type Range, StateField, type Text } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from "@codemirror/view";
-import { componentTokens } from "@git-manager/ui/tokens";
+import { componentTokens } from "@nibtree/ui/tokens";
 import {
   type ConflictChoice,
   type ConflictRegion,

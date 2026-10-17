@@ -3,7 +3,7 @@
 A terminal screen: xterm.js in the theme's terminal colors, with starting and failed states.
 
 ```ts
-import TerminalView from "@git-manager/ui/components/TerminalView.svelte";
+import TerminalView from "@nibtree/ui/components/TerminalView.svelte";
 ```
 
 Group: Editor. Also known as: Terminal, Console, xterm.

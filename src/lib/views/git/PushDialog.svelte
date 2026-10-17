@@ -1,17 +1,17 @@
 <!-- The Push dialog: the commits the current branch would push, the target remote and
      branch, Force push (--force-with-lease) and Push tags. A branch without an upstream gets one. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
-  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import ListBox from "@git-manager/ui/components/ListBox.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import Select from "@git-manager/ui/components/Select.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
+  import CodeBlock from "@nibtree/ui/components/CodeBlock.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import ListBox from "@nibtree/ui/components/ListBox.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import Select from "@nibtree/ui/components/Select.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { untrack } from "svelte";
   import { localKeys } from "$lib/commands/commandRuntime";
   import { api, errorMessage } from "$lib/api";

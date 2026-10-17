@@ -1,12 +1,12 @@
 <!-- Update Project: pulls every repository of the workspace, merging or rebasing
      the incoming changes; the choice is remembered. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Fieldset from "@git-manager/ui/components/Fieldset.svelte";
-  import RadioGroup from "@git-manager/ui/components/RadioGroup.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Fieldset from "@nibtree/ui/components/Fieldset.svelte";
+  import RadioGroup from "@nibtree/ui/components/RadioGroup.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { localKeys } from "$lib/commands/commandRuntime";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings, type UpdateMethod } from "$lib/stores/settings.svelte";

@@ -3,7 +3,7 @@
 A find bar floating over a view that is not an editor, such as the terminal.
 
 ```ts
-import FloatingFindBar from "@git-manager/ui/components/FloatingFindBar.svelte";
+import FloatingFindBar from "@nibtree/ui/components/FloatingFindBar.svelte";
 ```
 
 Group: Editor. Also known as: Find, Search box.

@@ -37,7 +37,7 @@ export function componentMarkdown(doc: ComponentDoc): string {
     ...wrap(doc.summary),
     "",
     "```ts",
-    `import ${doc.name} from "@git-manager/ui/components/${doc.name}.svelte";`,
+    `import ${doc.name} from "@nibtree/ui/components/${doc.name}.svelte";`,
     "```",
     "",
     ...wrap(`Group: ${doc.group}.${doc.aliases?.length ? ` Also known as: ${doc.aliases.join(", ")}.` : ""}`),
@@ -81,7 +81,7 @@ export function indexMarkdown(docs: ComponentDoc[]): string {
       "Generated from `ui/web/src/lib/docs/` by `bun run ui:docs`; do not edit by hand. Every component takes its " +
         "colors from the theme tokens and its sizes from `ui/design-tokens/`, and none takes a class or style: " +
         "everything is a prop. Lay out screens with Stack and write words with Text. Import a component from " +
-        "`@git-manager/ui/components/<Name>.svelte` (the local package; `$ui/...` inside the showcase); each one " +
+        "`@nibtree/ui/components/<Name>.svelte` (the local package; `$ui/...` inside the showcase); each one " +
         "has its own page in `docs/components/`, and each group's page " +
         "says in a line what every component is for.",
     ),

@@ -22,7 +22,7 @@ struct Sandbox {
 fn sandbox() -> &'static Sandbox {
     static SANDBOX: OnceLock<Sandbox> = OnceLock::new();
     SANDBOX.get_or_init(|| {
-        let home = std::env::temp_dir().join("git-manager-test-home");
+        let home = std::env::temp_dir().join("nibtree-test-home");
         std::fs::create_dir_all(&home).expect("create sandbox home");
         let home = home.real_path().expect("canonicalize sandbox home");
         let global_config = home.join("gitconfig");

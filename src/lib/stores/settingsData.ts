@@ -3,7 +3,7 @@
 // written and which session to restore on start. Kept free of Svelte and Tauri
 // so it can be tested directly.
 
-import { readThreeSplit, type ThreeSplit } from "@git-manager/ui/logic/threeSplit";
+import { readThreeSplit, type ThreeSplit } from "@nibtree/ui/logic/threeSplit";
 import type { AgentOverride } from "$lib/ai/agentConfig";
 import { pickRecentCommands } from "../commands/recentCommands";
 import { AUTO_SAVE_DELAY_RANGE, DEFAULT_AUTO_SAVE_DELAY } from "../editor/autoSave";
@@ -14,7 +14,7 @@ import { parseRecentFiles, type RecentFile } from "./recentFiles";
 import { parseTabSessions, type SavedTabSession } from "./tabSession";
 import type { ShortcutOverrides } from "../commands/registry";
 import { pickKeybindings } from "../commands/shortcutSettings";
-import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, pickThemeId } from "@git-manager/ui/themes/themeIndex";
+import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, pickThemeId } from "@nibtree/ui/themes/themeIndex";
 import { type MessageHistory, parseMessageHistory } from "../views/changes/commitMessages";
 import { type CommitTemplate, parseCommitTemplates } from "../views/changes/commitTemplates";
 

@@ -3,7 +3,7 @@
 A name edited in place: a small accent-bordered field; Enter keeps, Escape cancels, red when taken.
 
 ```ts
-import RenameField from "@git-manager/ui/components/RenameField.svelte";
+import RenameField from "@nibtree/ui/components/RenameField.svelte";
 ```
 
 Group: Forms. Also known as: Inline rename.
