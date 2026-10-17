@@ -65,7 +65,7 @@ sequenceDiagram
     RS-->>Form: GitHubAccount (no token)
 ```
 
-- **Token.** `secrets.rs` stores it with the `keyring` crate: service `com.shibbir.gitmanager.github`, account = the host. macOS uses the Keychain and Windows the Credential Manager. Other platforms refuse to save a token (they say to use the GitHub CLI) rather than fall back to a file. If saving `github.json` fails, the token is removed again.
+- **Token.** `secrets.rs` stores it with the `keyring` crate: service `io.github.shibbirweb.gitmanager.github`, account = the host. An old `com.shibbir.gitmanager.github` token moves over when read (`MovingStore`). macOS uses the Keychain, Windows the Credential Manager; other platforms refuse rather than use a file. If saving `github.json` fails, the token is removed again.
 - **GitHub CLI.** `gh.rs` finds `gh` in the Homebrew and system folders first (GUI apps start with a short `PATH`), then on `PATH`, and runs `gh auth token --hostname github.com` with `GH_PROMPT_DISABLED=1` and a 15 second timeout. It is asked each time a token is needed and never stored. This runs outside `git/cli.rs`, so it never reaches the Git Console.
 - **Who is signed in.** `account.rs` keeps `~/.gitmanager/github.json` with `host`, `login`, `name`, `source` (`token` or `ghCli`) and `missingScopes`. `github_account` reads only this file: no keychain read and no network, so opening Settings is free. A missing or unreadable file means signed out.
 - **Scopes.** Classic tokens report `x-oauth-scopes`; `missing_scopes` lists `repo` and `gist` when absent. Fine-grained tokens report none, so nothing is flagged.
@@ -121,6 +121,7 @@ Create Gist reads the active editor's selection, or the whole document, from Cod
 ## Tests
 
 - `src-tauri/src/github/tests.rs`: every sign-in path (the token only in the keychain, rejected or malformed tokens never stored, offline, the CLI storing nothing), sign out, signed-out calls making no request, Enterprise API roots, Share (including an existing remote refused before anything is created and the first commit of an empty repository), name rules, every Sync Fork outcome, gists, readable API errors, malformed bodies, and the real `UreqTransport` against a local server.
+- `secrets.rs`: moving an old token.
 - `src/lib/views/github/githubModel.test.ts`: names, remotes, gist names, the sync branch, titles, the compare URL, initials and the scope warning.
 
 ## Keeping this page in sync
