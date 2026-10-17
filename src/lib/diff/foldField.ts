@@ -56,13 +56,14 @@ function stepFold(view: EditorView, pos: number, edge: FoldEdge): void {
 
 function edgeButton(view: EditorView, element: HTMLElement, edge: "top" | "bottom"): HTMLElement {
   const button = document.createElement("button");
-  const title =
-    edge === "top" ? `Show ${FOLD_STEP} more lines at the top` : `Show ${FOLD_STEP} more lines at the bottom`;
+  const place = edge === "top" ? "top" : "bottom";
+  const title = `Show ${FOLD_STEP} more lines from the ${place} of the fold`;
   button.className = "cm-diffFoldStep";
   button.title = title;
   button.setAttribute("aria-label", title);
-  button.appendChild(iconSvg(edge === "top" ? "chevron-up" : "chevron-down", scales.iconSize.compact));
-  button.appendChild(document.createTextNode(`Show ${FOLD_STEP} more lines`));
+  // The arrow points the way the lines open: down from the code above, up from the code below.
+  button.appendChild(iconSvg(edge === "top" ? "chevron-down" : "chevron-up", scales.iconSize.compact));
+  button.appendChild(document.createTextNode(`${FOLD_STEP} more from the ${place}`));
   button.addEventListener("click", (event) => {
     event.stopPropagation();
     stepFold(view, view.posAtDOM(element), edge);

@@ -60,7 +60,7 @@ Click into one side and press Cmd+F. That side's find bar opens above the diff, 
 
 ## Collapse unchanged lines
 
-**Collapse unchanged** (on by default) folds long runs of lines that are the same on both sides, keeping three lines of context around each change. A folded run shows as a wavy line named after the code below it, such as **Cart > remove()** (or **23 unchanged lines** outside a class or function). The **Show 10 more lines** buttons at its left open more at the top or the bottom; a click elsewhere shows it all. Turn the button off to see the whole file. Nibtree remembers your choice for every diff.
+**Collapse unchanged** (on by default) folds long runs of lines that are the same on both sides, keeping three lines of context around each change. A folded run shows as a wavy line named after the code below it, such as **Cart > remove()** (or **23 unchanged lines** outside a class or function). At its left, **10 more from the top** and **10 more from the bottom** open its ends; a click elsewhere shows it all. Turn the button off to see the whole file. Nibtree remembers your choice for every diff.
 
 ## Stage or unstage one change
 
