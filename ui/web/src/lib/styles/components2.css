@@ -142,6 +142,10 @@
   --merge-view-actions-gap: 0px;
   --merge-view-action-size: 18px;
   --merge-view-action-icon: 13px;
+  --merge-view-stack-result-min: 120px;
+  --merge-lens-gap: 6px;
+  --merge-lens-padding-y: 2px;
+  --merge-lens-padding-x: 4px;
   --format-toolbar-min-height: 28px;
   --format-toolbar-padding-y: 2px;
   --format-toolbar-padding-left: 6px;
@@ -259,18 +263,4 @@
   --section-title-picker-padding-top: 6px;
   --section-title-picker-padding-x: 8px;
   --section-title-picker-padding-bottom: 2px;
-  --toggle-button-tool-width: 24px;
-  --toggle-button-tool-height: 22px;
-  --toggle-button-chip-padding-y: 2px;
-  --toggle-button-chip-padding-x: 6px;
-  --toggle-button-chip-gap: 5px;
-  --toggle-button-plain-height: 24px;
-  --toggle-button-plain-padding-x: 8px;
-  --toggle-button-plain-gap: 5px;
-  --toggle-button-icon-padding-x: 6px;
-  --toggle-button-outline-height: 26px;
-  --toggle-button-outline-padding-x: 10px;
-  --toggle-button-outline-gap: 6px;
-  --toggle-button-filter-height: 26px;
-  --toggle-button-filter-padding-x: 9px;
 }

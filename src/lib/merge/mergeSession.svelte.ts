@@ -6,24 +6,22 @@ import { EditorSelection, EditorState, type Extension } from "@codemirror/state"
 import { EditorView } from "@codemirror/view";
 import type { MergeFrameParts } from "@nibtree/ui/components/MergeFrame.svelte";
 import type { ConnectorRibbon } from "@nibtree/ui/components/MergeConnector.svelte";
-import { noVerticalScrollbar } from "@nibtree/ui/editor/mergeGutterTheme";
 import { baseExtensions } from "$lib/editor/setup";
-import type { ChangeMark } from "$lib/editor/lineDiff";
-import { changeMarkField, type MarkSource, scrollMarkers, setChangeMarks } from "$lib/editor/scrollMarkers";
+import { changeMarkField, setChangeMarks } from "$lib/editor/scrollMarkers";
+import type { MergeLayout } from "$lib/stores/settingsData";
 import type { MergeDocument } from "$lib/types";
 import {
   applyKeymap,
   chunkField,
-  type LineMark,
   resultExtensions,
-  resultMarks,
   setChunks,
   sideExtensions,
-  sideGutters,
   sideMarkEffects,
   sideMarks,
 } from "./extensions";
 import { InlineSpans } from "./inlineSpans";
+import { resultMarkSource, toChangeMarks } from "./mergeMarks";
+import { layoutCompartment, moveToLayout, paneLayout } from "./mergeLayout";
 import { ribbonsFor } from "./mergeRibbons";
 import { type Pane, ScrollSync } from "./mergeScroll";
 import {
@@ -38,10 +36,6 @@ import {
   type SideName,
 } from "./model";
 
-function toChangeMarks(marks: LineMark[]): ChangeMark[] {
-  return marks.map((mark) => ({ from: mark.range.start, to: mark.range.end, kind: mark.type }));
-}
-
 export class MergeSession {
   chunks = $state.raw<ChunkState[]>([]);
   leftRibbons = $state.raw<ConnectorRibbon[]>([]);
@@ -55,15 +49,7 @@ export class MergeSession {
   #lastMarkSignature = "";
   #drawPending = false;
   readonly #scroll = new ScrollSync();
-  // The result ruler follows the chunk field; memoized so scrolling does no work.
-  #resultMarkMemo: { chunks: ChunkState[]; marks: ChangeMark[] } | null = null;
-  readonly #resultMarkSource: MarkSource = (state) => {
-    const current = state.field(chunkField);
-    if (!this.#resultMarkMemo || this.#resultMarkMemo.chunks !== current) {
-      this.#resultMarkMemo = { chunks: current, marks: toChangeMarks(resultMarks(current)) };
-    }
-    return this.#resultMarkMemo.marks;
-  };
+  readonly #resultMarkSource = resultMarkSource();
 
   /** `onSaveKey` runs for Cmd+Enter in an editor. */
   constructor(
@@ -74,7 +60,7 @@ export class MergeSession {
   }
 
   /** Builds the editors into the frame's panes and shows the first open change. */
-  build(parts: MergeFrameParts, language: Extension): void {
+  build(parts: MergeFrameParts, language: Extension, layout: MergeLayout): void {
     if (this.views) {
       return;
     }
@@ -97,7 +83,7 @@ export class MergeSession {
             baseExtensions({ readOnly: true, kind: "merge", lineNumbers: false }),
             language,
             sideExtensions(),
-            sideGutters(side, this),
+            layoutCompartment.of(paneLayout(side, layout, this, this.#resultMarkSource)),
             changeMarkField,
             EditorView.editable.of(false),
           ],
@@ -115,8 +101,7 @@ export class MergeSession {
           baseExtensions({ readOnly: false, kind: "merge" }),
           language,
           resultExtensions(initialChunks(this.doc.chunks)),
-          scrollMarkers(this.#resultMarkSource, "onText"),
-          noVerticalScrollbar,
+          layoutCompartment.of(paneLayout("result", layout, this, this.#resultMarkSource)),
           EditorView.updateListener.of((update) => {
             if (update.docChanged || update.transactions.some((tr) => tr.effects.some((e) => e.is(setChunks)))) {
               this.#sync();
@@ -224,6 +209,22 @@ export class MergeSession {
   ignore(chunkId: number, side: SideName): void {
     if (this.views) {
       this.#dispatch(ignoreSide(this.views.result.state.field(chunkField), chunkId, side));
+    }
+  }
+
+  /** Takes both sides of a change, yours first (each its own undo step). */
+  acceptBoth(chunkId: number): void {
+    this.apply(chunkId, "ours");
+    this.apply(chunkId, "theirs");
+  }
+
+  /** Moves the editors into another layout's panes; nothing in them changes. */
+  relayout(parts: MergeFrameParts, layout: MergeLayout): void {
+    if (this.views) {
+      this.#panes = parts.panes;
+      moveToLayout(this.views, parts, layout, this, this.#resultMarkSource);
+      this.#lastMarkSignature = "";
+      this.#sync();
     }
   }
 

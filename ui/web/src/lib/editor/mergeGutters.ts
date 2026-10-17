@@ -159,6 +159,13 @@ class ActionsMarker extends GutterMarker {
 /** The chunks a pane's buttons belong to, sent whenever they change. */
 export const setGutterChunks = StateEffect.define<GutterChunk[]>();
 
+/** The last chunks sent with `setGutterChunks`, for whatever else draws them (the stacked merge's lenses). */
+export const gutterChunkField = StateField.define<GutterChunk[]>({
+  create: () => [],
+  update: (value, transaction) =>
+    (transaction.effects.find((effect) => effect.is(setGutterChunks))?.value as GutterChunk[] | undefined) ?? value,
+});
+
 /** Line numbers on `side`: `after` puts them right of the text, facing a pane on the right. */
 export function sideLineNumbers(side: GutterSide): Extension {
   if (side === "before") {

@@ -13,6 +13,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Added
 
+- The merge tool has two layouts. **Columns** shows yours, the result and theirs side by side; **Stacked** shows yours and theirs on top and the result across the bottom, with **Accept**, **Accept both** and **Ignore** above each change and a note on each open conflict in the result. Switch with the buttons in the toolbar, without losing any work; the choice is remembered and **Merge tool layout** in Settings > Git sets it.
 - The window glows softly in the open project's color from its top left corner, the same color as its tile on the Welcome page, so windows are easy to tell apart. On macOS the window buttons now sit in the app's top bar, with no separate title strip. Turn the color off with **Project color in the top bar** in Settings > Appearance.
 - A commit's message and details (History panel and commit tabs) can be resized: drag the bar above the changed files. The height is remembered.
 - Every diff (Changes, the Changes tab, commits in History and commit tabs, branch and revision compares, shelves, Compare Files and local history) is one view with the same toolbar and buttons. A commit's diff gets **Revert this change** and **Apply this change** for your working tree, and three columns (parent, commit and working tree); **Side by side for commits** in Settings > Git picks them.

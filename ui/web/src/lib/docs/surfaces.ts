@@ -165,6 +165,45 @@ export const surfaceDocs: ComponentDoc[] = [
     replaces: ["src/lib/merge/MergeEditor.svelte (pane titles, panes and connectors)"],
   },
   {
+    name: "MergeStackFrame",
+    group: "Editor",
+    summary: "The stacked frame of a 3-way merge: yours and theirs side by side on top, the result below.",
+    usage:
+      "The other layout of MergeFrame, for a merge read top to bottom. Like it, it draws no editor: `onready` " +
+      "hands over the three panes. It has no connectors, so the app marks each change with a lens of links " +
+      "above it (editor/chunkLens.ts `chunkLenses`: Accept, Accept both, Ignore). Load it only when it is " +
+      "picked, with a dynamic import. Drag the line under the top row, or between the top panes, to resize.",
+    aliases: ["Merge", "Stacked merge", "Merge host"],
+    props: [
+      prop("label", "string", "Accessible name.", { required: true }),
+      prop("labels", "{ left; result; right }", "Pane titles.", {
+        default: '{ left: "Yours", result: "Result", right: "Theirs" }',
+      }),
+      prop("fileName", "string", "Shown dim after the result's title.", { default: '""' }),
+      prop("topHeight", "number", "The top row's height in px; 0 starts it at half the frame.", {
+        default: "0",
+        bindable: true,
+        data: true,
+      }),
+      prop("ratio", "number", "The split between the two top panes, 0 to 1.", {
+        default: "0.5",
+        bindable: true,
+        data: true,
+      }),
+      prop("oncommit", "(topHeight: number, ratio: number) => void", "A drag ended: save the sizes."),
+      prop("resultEnd", "Snippet", "At the end of the result's title, such as how many changes are left."),
+      prop("onready", "(parts: MergeFrameParts) => void | (() => void)", "The panes, once shown."),
+    ],
+    rules: ["Never draw UI in the panes: they hold only the editors the app builds."],
+    examples: [
+      {
+        title: "The merge tool, stacked",
+        code: '<MergeStackFrame label="Merge" {labels} fileName="app.ts" onready={build} />',
+      },
+    ],
+    replaces: ["a second merge layout"],
+  },
+  {
     name: "MergeView",
     group: "Editor",
     summary: "The 3-way merge: yours, the editable result and theirs, chunks tinted and joined by ribbons.",

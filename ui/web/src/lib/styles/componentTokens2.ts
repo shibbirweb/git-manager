@@ -64,7 +64,9 @@ export const componentTokens2 = {
     actionsGap: 0,
     actionSize: 18,
     actionIcon: 13,
+    stackResultMin: 120,
   },
+  mergeLens: { gap: 6, paddingY: 2, paddingX: 4 },
   formatToolbar: {
     minHeight: 28,
     paddingY: 2,

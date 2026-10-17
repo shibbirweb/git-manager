@@ -56,6 +56,27 @@ These buttons are greyed out once no such changes are left.
 
 *After Apply non-conflicting: 2 changes left, both conflicts, and the wand is greyed out.*
 
+## Two layouts: Columns and Stacked
+
+The two buttons at the end of the toolbar pick how the panes sit:
+
+- **Columns** (three columns): yours, the result and theirs side by side, joined by ribbons. This is the layout described above.
+- **Stacked** (two panes over one): yours and theirs side by side on top, the result across the bottom.
+
+![The Stacked layout](../images/merge-tool-stacked.png)
+
+*Stacked after Apply non-conflicting: each open conflict has its links in yours and theirs, and the result shows No changes accepted.*
+
+In Stacked, each change has a row of links above it instead of buttons:
+
+- **Accept** takes that side's change into the result.
+- **Accept both** (conflicts only) takes yours, then theirs.
+- **Ignore** marks that side's change done without taking it.
+
+Above each open conflict, the result says what it has taken so far: **No changes accepted**, **Left side taken** or **Right side taken**. Drag the line under the top row to give the result more room, or the line between yours and theirs; Nibtree remembers both.
+
+Switching layouts keeps everything: your edits, the changes you took and Undo. The layout you pick is remembered for the next merge; **Merge tool layout** in Settings > Git sets it too.
+
 ## Move around
 
 - **F7** jumps to the next unresolved change, **Shift+F7** to the previous one. The arrow buttons in the toolbar do the same.

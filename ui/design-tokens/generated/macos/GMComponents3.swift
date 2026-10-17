@@ -37,6 +37,13 @@ public enum GMMergeViewTokens {
     public static let actionsGap: CGFloat = 0
     public static let actionSize: CGFloat = 18
     public static let actionIcon: CGFloat = 13
+    public static let stackResultMin: CGFloat = 120
+}
+
+public enum GMMergeLensTokens {
+    public static let gap: CGFloat = 6
+    public static let paddingY: CGFloat = 2
+    public static let paddingX: CGFloat = 4
 }
 
 public enum GMFormatToolbarTokens {
@@ -260,15 +267,4 @@ public enum GMPatchViewTokens {
     public static let paddingY: CGFloat = 6
     public static let linePaddingX: CGFloat = 12
     public static let lineHeight: CGFloat = 1.5
-}
-
-public enum GMAppHeaderTokens {
-    public static let height: CGFloat = 42
-    public static let paddingX: CGFloat = 8
-    public static let gap: CGFloat = 12
-    public static let sideGap: CGFloat = 4
-    public static let dividerLength: CGFloat = 18
-    public static let busyMaxWidth: CGFloat = 280
-    public static let tintWidth: CGFloat = 520
-    public static let controlsInset: CGFloat = 80
 }
